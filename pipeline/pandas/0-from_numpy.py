@@ -2,7 +2,6 @@
 """
 This is a code for function that creates a pd.DataFrame from a np.ndarray
 """
-import numpy as np
 import pandas as pd
 
 
