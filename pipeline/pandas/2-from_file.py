@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Loads data from a file into a pandas DataFrame"""
 
 import pandas as pd
