@@ -2,7 +2,6 @@
 """
 Function def flip_switch(df):
 """
-import pandas as pd
 
 
 def flip_switch(df):
