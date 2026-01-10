@@ -14,5 +14,5 @@ def fill(df):
         df[col] = df[col].fillna(df["Close"])
     for col in ["Volume_(BTC)", "Volume_(Currency)"]:
         df[col] = df[col].fillna(0)
-    
+
     return df
