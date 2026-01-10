@@ -3,6 +3,7 @@
 Function def slice(df): that takes a pd.DataFrame
 """
 
+
 def slice(df):
     """
     Function def slice(df): that takes a pd.DataFrame
