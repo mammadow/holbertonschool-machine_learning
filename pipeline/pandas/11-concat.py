@@ -2,6 +2,7 @@
 """
 function def concat(df1, df2):
 """
+import pandas as pd
 
 
 def concat(df1, df2):
