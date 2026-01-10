@@ -2,6 +2,7 @@
 """
 13-analyze.py
 """
+import pandas as pd
 
 
 def analyze(df):
