@@ -2,11 +2,10 @@
 """
 13-analyze.py
 """
-import pandas as pd
 
 
 def analyze(df):
     """
     def analyze(df):
     """
-    return df.describe(exlude=["Timestamp"])
+    return df.drop(columns=["Timestamp"]).describe()
