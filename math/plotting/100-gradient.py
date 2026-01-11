@@ -21,5 +21,4 @@ def gradient():
     cbar = plt.colorbar()
     cbar.set_label("elevation (m)")
 
-    plt.savefig('gradient.png')
     plt.show()
