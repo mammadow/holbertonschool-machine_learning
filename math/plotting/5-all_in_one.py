@@ -3,6 +3,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+
 def all_in_one():
     """code to plot all 5 previous graphs in one figure"""
     y0 = np.arange(0, 11) ** 3
@@ -69,7 +70,6 @@ def all_in_one():
     plt.xticks(np.arange(0, 101, 10))
     plt.yticks(np.arange(0, 31, 10))
     plt.ylim(0, 30)
-
 
     plt.tight_layout()
     plt.savefig('debug.png')
