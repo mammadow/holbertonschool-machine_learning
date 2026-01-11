@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+"""
+Visualizes the Iris dataset using PCA reduced to 3 dimensions
+"""
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 import numpy as np
