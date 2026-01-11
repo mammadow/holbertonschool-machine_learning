@@ -72,5 +72,4 @@ def all_in_one():
     plt.ylim(0, 30)
 
     plt.tight_layout()
-    plt.savefig('debug.png')
     plt.show()
