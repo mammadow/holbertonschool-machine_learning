@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
-"""Module to integral of the polynomials"""
+"""Module to calculate integral of the polynomials"""
 
 
 def poly_integral(poly, C=0):
-    if not isinstance(poly, list) or not isinstance(C, (int, float)):
+    """Function to calculate integral of the polynomials"""
+    if not isinstance(poly, list) or not isinstance(C, (int, float))\
+            or len(poly) == 0:
         return None
 
     for coeff in poly:
