@@ -11,6 +11,9 @@ def poly_derivative(poly):
         if not isinstance(coeff, (int, float)):
             return None
     
+    if len(poly) == 1:
+        return [0]
+    
     derivative = []
 
     for power in range(1, len(poly)):
