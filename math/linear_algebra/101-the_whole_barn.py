@@ -4,7 +4,7 @@
 
 def add_matrices(mat1, mat2):
     """Adds two matrices of any dimension"""
-    if type(mat1) != type(mat2):
+    if isinstance(mat1, list) != isinstance(mat2, list):
         return None
 
     if isinstance(mat1, list):
