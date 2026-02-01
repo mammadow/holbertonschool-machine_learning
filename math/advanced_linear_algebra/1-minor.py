@@ -35,7 +35,7 @@ def minor(matrix):
         raise ValueError("matrix must be a non-empty square matrix")
 
     if n == 1:
-    return [[1]]
+        return [[1]]
 
     minors = []
     for i in range(n):
