@@ -34,6 +34,9 @@ def minor(matrix):
     if n == 0 or matrix == [[]] or any(len(row) != n for row in matrix):
         raise ValueError("matrix must be a non-empty square matrix")
 
+    if n == 1:
+    return [[1]]
+
     minors = []
     for i in range(n):
         row_minors = []
