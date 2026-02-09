@@ -5,6 +5,9 @@
 class Normal:
     """Represents a normal distribution."""
 
+    pi = 3.1415926535897932
+    e = 2.7182818284590452
+
     def __init__(self, data=None, mean=0., stddev=1.):
         """Initialize a Normal distribution."""
         if data is None:
@@ -31,3 +34,9 @@ class Normal:
     def x_value(self, z):
         """Calculate the x-value of a given z-score."""
         return self.mean + (z * self.stddev)
+
+    def pdf(self, x):
+        """Calculate the value of the PDF for a given x-value."""
+        coefficient = 1 / (self.stddev * (2 * Normal.pi) ** 0.5)
+        exponent = -0.5 * ((x - self.mean) / self.stddev) ** 2
+        return coefficient * (Normal.e ** exponent)
