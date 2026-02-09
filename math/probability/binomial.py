@@ -43,7 +43,7 @@ class Binomial:
         Calculate the value of the PMF for a given number of successes.
         """
         k = int(k)
-        if k <= or k > self.n:
+        if k <= 0 or k > self.n:
             return 0
 
         comb = (Binomial._factorial(self.n)
