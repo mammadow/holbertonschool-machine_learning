@@ -4,7 +4,7 @@
 
 class Binomial:
     """Represents a binomial distribution."""
-    
+ 
     def __init__(self, data=None, n=1, p=0.5):
         """Initialize a Binomial distribution."""
         if data is None:
@@ -29,3 +29,19 @@ class Binomial:
 
             self.n = int(n)
             self.p = float(p)
+
+    @staticmethod
+    def _factorial(n):
+        """Calculate the factorial of n."""
+        result = 1
+        for i in range(2, n + 1):
+            result *= i
+        return result
+
+    def pmf(self, k):
+        """
+        Calculate the value of the PMF for a given number of successes.
+        """
+        k = int(k)
+        if k < = or k > self.n:
+            return 0
