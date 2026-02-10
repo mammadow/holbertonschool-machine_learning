@@ -18,7 +18,7 @@ def likelihood(x, n, P):
 
     likelihood_values = binomial_coef * (P ** x) * ((1 - P) ** (n - x))
 
-    return likelihodo_values
+    return likelihood_values
 
 
 def intersection(x, n, P, Pr):
