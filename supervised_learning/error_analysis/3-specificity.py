@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Module for calculating specifity"""
+"""Module for calculating specificity"""
 import numpy as np
 
 
-def specifity(confusion):
-    """Calculates specifity"""
+def specificity(confusion):
+    """Calculates specificity"""
     tp = np.diag(confusion)
     row_sums = np.sum(confusion, axis=1)
     col_sums = np.sum(confusion, axis=0)
