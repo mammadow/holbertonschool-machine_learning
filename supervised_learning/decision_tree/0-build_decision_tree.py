@@ -16,6 +16,7 @@ class Node:
         self.threshold = threshold
         self.left_child = left_child
         self.right_child = right_child
+        self.is_leaf = False
         self.is_root = is_root
         self.sub_population = None
         self.depth = depth
