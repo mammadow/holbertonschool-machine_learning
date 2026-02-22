@@ -20,7 +20,7 @@ class Random_Forest():
     def predict(self, explanatory):
         """Returns the majority vote prediction across all trees."""
         all_preds = np.array([pred(explanatory) for pred in
-                               self.numpy_preds])
+                              self.numpy_preds])
         return np.apply_along_axis(
             lambda x: np.bincount(x).argmax(), axis=0, arr=all_preds
         )
