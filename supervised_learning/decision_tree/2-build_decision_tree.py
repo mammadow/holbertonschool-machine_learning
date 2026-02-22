@@ -35,7 +35,8 @@ class Node:
         lines = text.split("\n")
         new_text = "    +--" + lines[0] + "\n"
         for x in lines[1:]:
-            new_text += ("    |  " + x) + "\n"
+            if x:
+                new_text += ("    |  " + x) + "\n"
         return new_text
 
     def right_child_add_prefix(self, text):
@@ -43,15 +44,18 @@ class Node:
         lines = text.split("\n")
         new_text = "    +--" + lines[0] + "\n"
         for x in lines[1:]:
-            new_text += ("       " + x) + "\n"
+            if x:
+                new_text += ("       " + x) + "\n"
         return new_text
 
     def __str__(self):
         """Returns a string representation of the subtree rooted at this node."""
         if self.is_root:
-            node_str = f"root [feature={self.feature}, threshold={self.threshold}]\n"
+            node_str = (f"root [feature={self.feature},"
+                        f" threshold={self.threshold}]\n")
         else:
-            node_str = f"-> node [feature={self.feature}, threshold={self.threshold}]\n"
+            node_str = (f"-> node [feature={self.feature},"
+                        f" threshold={self.threshold}]\n")
         left_str = self.left_child_add_prefix(str(self.left_child))
         right_str = self.right_child_add_prefix(str(self.right_child))
         return node_str + left_str + right_str
