@@ -59,12 +59,19 @@ class Isolation_Random_Tree():
     def random_split_criterion(self, node):
         """Returns a random feature and threshold for splitting a node."""
         diff = 0
+        n_features = self.explanatory.shape[1]
+        tried = 0
         while diff == 0:
-            feature = self.rng.integers(0, self.explanatory.shape[1])
+            feature = self.rng.integers(0, n_features)
             feature_min, feature_max = self.np_extrema(
                 self.explanatory[:, feature][node.sub_population]
             )
             diff = feature_max - feature_min
+            tried += 1
+            if tried > n_features * 10:
+                break
+        if diff == 0:
+            return feature, feature_min
         x = self.rng.uniform()
         threshold = (1 - x) * feature_min + x * feature_max
         return feature, threshold
@@ -98,7 +105,7 @@ class Isolation_Random_Tree():
 
         is_left_leaf = (
             node.depth + 1 >= self.max_depth
-            or np.sum(left_population) < self.min_pop
+            or np.sum(left_population) <= self.min_pop
         )
 
         if is_left_leaf:
@@ -109,7 +116,7 @@ class Isolation_Random_Tree():
 
         is_right_leaf = (
             node.depth + 1 >= self.max_depth
-            or np.sum(right_population) < self.min_pop
+            or np.sum(right_population) <= self.min_pop
         )
 
         if is_right_leaf:
