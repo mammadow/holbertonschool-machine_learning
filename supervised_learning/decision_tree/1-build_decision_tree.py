@@ -8,7 +8,9 @@ class Node:
 
     def __init__(self, feature=None, threshold=None, left_child=None,
                  right_child=None, is_root=False, depth=0):
-        """Initializes a Node with its feature, threshold, children, and depth."""
+        """
+        Initializes a Node with its feature, threshold, children, and depth.
+        """
         self.feature = feature
         self.threshold = threshold
         self.left_child = left_child
@@ -19,12 +21,16 @@ class Node:
         self.depth = depth
 
     def max_depth_below(self):
-        """Returns the maximum depth found in the subtree rooted at this node."""
+        """
+        Returns the maximum depth found in the subtree rooted at this node.
+        """
         return max(self.left_child.max_depth_below(),
                    self.right_child.max_depth_below())
 
     def count_nodes_below(self, only_leaves=False):
-        """Counts all nodes (or only leaves) in the subtree rooted at this node."""
+        """
+        Counts all nodes (or only leaves) in the subtree rooted at this node.
+        """
         self_count = 0 if only_leaves else 1
         return (self_count
                 + self.left_child.count_nodes_below(only_leaves=only_leaves)
@@ -55,7 +61,9 @@ class Decision_Tree():
 
     def __init__(self, max_depth=10, min_pop=1, seed=0,
                  split_criterion="random", root=None):
-        """Initializes a Decision_Tree with its hyperparameters and root node."""
+        """
+        Initializes a Decision_Tree with its hyperparameters and root node.
+        """
         self.rng = np.random.default_rng(seed)
         if root:
             self.root = root
