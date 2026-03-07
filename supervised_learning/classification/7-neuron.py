@@ -86,7 +86,7 @@ class Neuron:
             if step <= 0 or step > iterations:
                 raise ValueErro("step must be positive and <= iteration")
 
-        cost = []
+        costs = []
         steps = []
 
         for i in range(iterations):
