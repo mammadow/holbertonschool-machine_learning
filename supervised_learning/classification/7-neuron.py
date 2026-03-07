@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Module that defines a single neuron performing binary classification."""
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 class Neuron:
@@ -89,7 +90,7 @@ class Neuron:
         costs = []
         steps = []
 
-        for i in range(iterations):
+        for i in range(iterations + 1):
             A = self.forward_prop(X)
             cost = self.cost(Y, A)
 
