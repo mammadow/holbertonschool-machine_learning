@@ -93,7 +93,7 @@ class Neuron:
             A = self.forward_prop(X)
             cost = self.cost(Y, A)
 
-            if i % step == 0 or i == iteration:
+            if i % step == 0 or i == iterations:
                 if verbose:
                     print(f"Cost after {i} iteration: {cost}")
                 if graph:
