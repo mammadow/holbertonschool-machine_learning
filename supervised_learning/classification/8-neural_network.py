@@ -4,9 +4,9 @@ import numpy as np
 
 
 class NeuralNetwork:
-"""
-Defines a neural network with one hidden layer performing binary classification
-"""
+    """
+    Defines a neural network.
+    """
 
     def __init__(self, nx, nodes):
         """Initialize the neural network"""
