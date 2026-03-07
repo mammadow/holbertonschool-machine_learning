@@ -83,7 +83,7 @@ class Neuron:
         if verbose or graph:
             if not isinstance(step, int):
                 raise TypeError("step must be an integer")
-            if step <= 0 or step > iteration:
+            if step <= 0 or step > iterations:
                 raise ValueErro("step must be positive and <= iteration")
 
         cost = []
