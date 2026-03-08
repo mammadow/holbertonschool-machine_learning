@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Module that defines a neural network with one hidden layer."""
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 class NeuralNetwork:
