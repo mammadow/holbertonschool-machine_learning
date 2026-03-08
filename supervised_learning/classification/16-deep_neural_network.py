@@ -26,6 +26,6 @@ class DeepNeuralNetwork:
             prev_nodes = nx if i == 0 else layers[i - 1]
 
             self.weights["W{}".format(layer_num)] = (
-                    np.random.randn(nodes, prev_nodes) * np.sqrt(2 / prev_nodes)
-                    )
+                np.random.randn(nodes, prev_nodes) * np.sqrt(2 / prev_nodes)
+            )
             self.weights["b{}".format(layer_num)] = np.zeros((nodes, 1))
