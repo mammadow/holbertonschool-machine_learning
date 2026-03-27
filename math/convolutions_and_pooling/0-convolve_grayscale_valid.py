@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Performs a valid convolution on multiple grayscale images using a given kernel."""
+"""Performs a valid convolution"""
 
 import numpy as np
 
 
 def convolve_grayscale_valid(images, kernel):
-    """Applies a valid convolution to a batch of grayscale images and returns the resulting feature maps."""
+    """Applies a valid convolution"""
     m, h, w = images.shape
     kh, kw = kernel.shape
 
