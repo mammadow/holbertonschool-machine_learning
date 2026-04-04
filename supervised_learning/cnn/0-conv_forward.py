@@ -32,7 +32,7 @@ def conv_forward(A_prev, W, b, activation, padding="same",
             vert_start = i * sh
             vert_end = vert_start + kh
             horiz_start = j * sw
-            horiz_end = horis_start + kw
+            horiz_end = horiz_start + kw
             window = A_prev_pad[:, vert_start:vert_end,
                                 horiz_start:horiz_end, :]
 
