@@ -39,8 +39,8 @@ def conv_backward(dZ, A_prev, W, b, padding="same", stride=(1, 1)):
                 dz = dZ[:, i, j, k][:, None, None, None]
                 dW[:, :, :, k] += np.sum(a_slice * dz, axis=0)
                 dA_prev_pad[:, vert_start:vert_end,
-                           horiz_start:horiz_end, :] += (
-                    W[:, :, :, k] * dz
+                            horiz_start:horiz_end, :] += (
+                                   W[:, :, :, k] * dz
                 )
 
     if ph == 0:
