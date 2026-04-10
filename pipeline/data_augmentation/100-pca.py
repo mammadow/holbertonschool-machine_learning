@@ -2,29 +2,31 @@
 """PCA color module"""
 
 import tensorflow as tf
+import numpy as np
 
 
 def pca_color(image, alphas):
     """Perform PCA color augmentation"""
-    image = tf.cast(image, tf.float32)
-    shape = tf.shape(image)
+    renorm_image = np.reshape(image, (image.shape[0] * image.shape[1], 3))
 
-    pixels = tf.reshape(image, (-1, 3))
-    mean = tf.reduce_mean(pixels, axis=0)
-    centered = pixels - mean
+    mean = np.mean(renorm_image, axis=0)
+    std = np.std(renorm_image, axis=0)
 
-    cov = tf.matmul(centered, centered, transpose_a=True)
-    cov = cov / tf.cast(tf.shape(centered)[0] - 1, tf.float32)
+    renorm_image = renorm_image.astype('float32')
+    renorm_image -= np.mean(renorm_image, axis=0)
+    renorm_image /= np.std(renorm_image, axis=0)
 
-    eigvals, eigvecs = tf.linalg.eigh(cov)
-    eigvals = tf.reverse(eigvals, axis=[0])
-    eigvecs = tf.reverse(eigvecs, axis=[1])
+    cov = np.cov(renorm_image, rowvar=False)
 
-    alphas = tf.cast(alphas, tf.float32)
-    delta = tf.matmul(eigvecs, tf.reshape(alphas * eigvals, (3, 1)))
-    delta = tf.reshape(delta, (1, 3))
+    lambdas, p = np.linalg.eig(cov)
 
-    augmented = pixels + delta
-    augmented = tf.reshape(augmented, shape)
+    delta = np.dot(p, alphas * lambdas)
 
-    return tf.clip_by_value(augmented, 0, 255)
+    pca_augmentation = renorm_image + delta
+    pca_color_image = pca_augmentation * std + mean
+    pca_color_image = pca_color_image.reshape(image.shape[0], image.shape[1], 3)
+    pca_color_image = np.maximum(np.minimum(pca_color_image, 255), 0).astype(
+        'uint8'
+    )
+
+    return pca_color_image
