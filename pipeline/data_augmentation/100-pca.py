@@ -14,16 +14,19 @@ def pca_color(image, alphas):
     centered = pixels - mean
 
     cov = tf.matmul(centered, centered, transpose_a=True)
-    cov /= tf.cast(tf.shape(centered)[0] - 1, tf.float32)
+    cov = cov / tf.cast(tf.shape(centered)[0] - 1, tf.float32)
 
     eigvals, eigvecs = tf.linalg.eigh(cov)
-    eigvals = tf.reshape(eigvals, (1, 3))
-    alphas = tf.cast(tf.reshape(alphas, (1, 3)), tf.float32)
+    eigvals = tf.reverse(eigvals, axis=[0])
+    eigvecs = tf.reverse(eigvecs, axis=[1])
 
-    delta = tf.matmul(eigvecs, tf.transpose(alphas * eigvals))
-    delta = tf.reshape(delta, (1, 3))
+    alphas = tf.cast(alphas, tf.float32)
+    delta = tf.matmul(
+        eigvecs,
+        tf.reshape(alphas * eigvals, (-1, 1))
+    )
 
-    augmented = pixels + delta
+    augmented = pixels + tf.reshape(delta, (1, 3))
     augmented = tf.reshape(augmented, shape)
     augmented = tf.clip_by_value(augmented, 0, 255)
 
