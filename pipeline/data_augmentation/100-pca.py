@@ -21,13 +21,10 @@ def pca_color(image, alphas):
     eigvecs = tf.reverse(eigvecs, axis=[1])
 
     alphas = tf.cast(alphas, tf.float32)
-    delta = tf.matmul(
-        eigvecs,
-        tf.reshape(alphas * eigvals, (-1, 1))
-    )
+    delta = tf.matmul(eigvecs, tf.reshape(alphas * eigvals, (3, 1)))
+    delta = tf.reshape(delta, (1, 3))
 
-    augmented = pixels + tf.reshape(delta, (1, 3))
+    augmented = pixels + delta
     augmented = tf.reshape(augmented, shape)
-    augmented = tf.clip_by_value(augmented, 0, 255)
 
-    return tf.cast(augmented, tf.uint8)
+    return tf.clip_by_value(augmented, 0, 255)
