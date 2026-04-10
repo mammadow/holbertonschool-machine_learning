@@ -8,25 +8,28 @@ def pca_color(image, alphas):
     """Perform PCA color augmentation"""
     tnp = tf.experimental.numpy
 
-    image = tnp.asarray(image, dtype=tnp.float32)
-    orig = tnp.array(image, copy=True)
+    renorm_image = tnp.reshape(
+        image, (image.shape[0] * image.shape[1], 3)
+    )
 
-    img = image / 255.0
-    img = tnp.reshape(img, (-1, 3))
-    img_centered = img - tnp.mean(img, axis=0)
+    mean = tnp.mean(renorm_image, axis=0)
+    std = tnp.std(renorm_image, axis=0)
 
-    cov = tnp.cov(img_centered, rowvar=False)
-    eig_vals, eig_vecs = tnp.linalg.eigh(cov)
+    renorm_image = tnp.asarray(renorm_image, dtype='float32')
+    renorm_image -= tnp.mean(renorm_image, axis=0)
+    renorm_image /= tnp.std(renorm_image, axis=0)
 
-    sort_perm = tnp.argsort(eig_vals)[::-1]
-    eig_vals = eig_vals[sort_perm]
-    eig_vecs = eig_vecs[:, sort_perm]
+    cov = tnp.cov(renorm_image, rowvar=False)
+    lambdas, p = tnp.linalg.eig(cov)
+    delta = tnp.dot(p, alphas * lambdas)
 
-    alphas = tnp.asarray(alphas, dtype=tnp.float32)
-    delta = tnp.dot(eig_vecs, alphas * eig_vals)
+    pca_augmentation = renorm_image + delta
+    pca_color_image = pca_augmentation * std + mean
+    pca_color_image = tnp.reshape(
+        pca_color_image, (image.shape[0], image.shape[1], 3)
+    )
+    pca_color_image = tnp.maximum(
+        tnp.minimum(pca_color_image, 255), 0
+    ).astype('uint8')
 
-    for i in range(3):
-        orig[..., i] += delta[i]
-
-    orig = tnp.clip(orig, 0.0, 255.0)
-    return orig.astype(tnp.uint8)
+    return pca_color_image
