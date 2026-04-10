@@ -6,32 +6,32 @@ import tensorflow as tf
 
 def pca_color(image, alphas):
     """Perform PCA color augmentation"""
-    image = tf.cast(image, tf.float32)
-    shape = tf.shape(image)
+    tnp = tf.experimental.numpy
 
-    pixels = tf.reshape(image, (-1, 3))
+    renorm_image = tnp.reshape(
+        image, (image.shape[0] * image.shape[1], 3)
+    )
 
-    mean = tf.reduce_mean(pixels, axis=0)
-    std = tf.math.reduce_std(pixels, axis=0)
+    mean = tnp.mean(renorm_image, axis=0)
+    std = tnp.std(renorm_image, axis=0)
 
-    norm = (pixels - mean) / std
+    renorm_image = tnp.asarray(renorm_image, dtype='float32')
+    renorm_image -= tnp.mean(renorm_image, axis=0)
+    renorm_image /= tnp.std(renorm_image, axis=0)
 
-    cov = tf.matmul(norm, norm, transpose_a=True)
-    cov /= tf.cast(tf.shape(norm)[0] - 1, tf.float32)
+    cov = tnp.cov(renorm_image, rowvar=False)
 
-    eigvals, eigvecs = tf.linalg.eigh(cov)
-    eigvals = tf.reverse(eigvals, axis=[0])
-    eigvecs = tf.reverse(eigvecs, axis=[1])
+    lambdas, p = tnp.linalg.eig(cov)
 
-    alphas = tf.cast(alphas, tf.float32)
+    delta = tnp.dot(p, alphas * lambdas)
 
-    delta = tf.matmul(eigvecs, tf.reshape(alphas * eigvals, (3, 1)))
-    delta = tf.reshape(delta, (1, 3))
+    pca_augmentation = renorm_image + delta
+    pca_color_image = pca_augmentation * std + mean
+    pca_color_image = tnp.reshape(
+        pca_color_image, (image.shape[0], image.shape[1], 3)
+    )
+    pca_color_image = tnp.maximum(
+        tnp.minimum(pca_color_image, 255), 0
+    ).astype('uint8')
 
-    augmented = norm + delta
-    augmented = augmented * std + mean
-
-    augmented = tf.reshape(augmented, shape)
-    augmented = tf.clip_by_value(augmented, 0, 255)
-
-    return tf.cast(augmented, tf.uint8)
+    return pca_color_image
