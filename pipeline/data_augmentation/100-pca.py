@@ -6,30 +6,27 @@ import tensorflow as tf
 
 def pca_color(image, alphas):
     """Perform PCA color augmentation"""
-    tnp = tf.experimental.numpy
+    image = tf.cast(image, tf.float32)
+    flat = tf.reshape(image, (-1, 3))
 
-    renorm_image = tnp.reshape(
-        image, (image.shape[0] * image.shape[1], 3)
-    )
+    var = tf.math.reduce_variance(flat, axis=0)
+    scaling_factor = tf.sqrt(3.0 / tf.reduce_sum(var))
+    flat = flat * scaling_factor
 
-    mean = tnp.mean(renorm_image, axis=0)
-    std = tnp.std(renorm_image, axis=0)
+    mean = tf.reduce_mean(flat, axis=0)
+    centered = flat - mean
 
-    renorm_image = tnp.asarray(renorm_image, dtype='float32')
-    renorm_image -= tnp.mean(renorm_image, axis=0)
-    renorm_image /= tnp.std(renorm_image, axis=0)
+    n = tf.cast(tf.shape(centered)[0], tf.float32)
+    cov = tf.matmul(centered, centered, transpose_a=True) / (n - 1.0)
 
-    cov = tnp.cov(renorm_image, rowvar=False)
-    lambdas, p = tnp.linalg.eig(cov)
-    delta = tnp.dot(p, alphas * lambdas)
+    s, u, _ = tf.linalg.svd(cov)
 
-    pca_augmentation = renorm_image + delta
-    pca_color_image = pca_augmentation * std + mean
-    pca_color_image = tnp.reshape(
-        pca_color_image, (image.shape[0], image.shape[1], 3)
-    )
-    pca_color_image = tnp.maximum(
-        tnp.minimum(pca_color_image, 255), 0
-    ).astype('uint8')
+    alphas = tf.cast(alphas, tf.float32)
+    delta = tf.linalg.matvec(u, alphas * s)
+    delta = tf.cast(delta * 255.0, tf.int32)
+    delta = tf.reshape(delta, (1, 1, 3))
 
-    return pca_color_image
+    out = tf.cast(image, tf.int32) + delta
+    out = tf.clip_by_value(out, 0, 255)
+
+    return tf.cast(out, tf.uint8)
