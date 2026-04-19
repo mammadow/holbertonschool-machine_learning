@@ -12,10 +12,9 @@ def densenet121(growth_rate=32, compression=1.0):
 
     X = K.Input(shape=(224, 224, 3))
 
-    # Initial layer
     X1 = K.layers.BatchNormalization(axis=3)(X)
-    X1 = K.layers.Activation('relu')(X1)
-    X1 = K.layers.Conv2D(64, (7, 7),
+    X1 = K.layers.ReLU()(X1)
+    X1 = K.layers.Conv2D(2 * growth_rate, (7, 7),
                          strides=(2, 2),
                          padding='same',
                          kernel_initializer=init)(X1)
@@ -23,38 +22,22 @@ def densenet121(growth_rate=32, compression=1.0):
                                strides=(2, 2),
                                padding='same')(X1)
 
-    nb_filters = 64
+    nb_filters = 2 * growth_rate
 
-    # Dense Block 1
-    X1, nb_filters = dense_block(X1, nb_filters,
-                                 growth_rate, 6)
-    X1, nb_filters = transition_layer(X1, nb_filters,
-                                      compression)
+    X1, nb_filters = dense_block(X1, nb_filters, growth_rate, 6)
+    X1, nb_filters = transition_layer(X1, nb_filters, compression)
 
-    # Dense Block 2
-    X1, nb_filters = dense_block(X1, nb_filters,
-                                 growth_rate, 12)
-    X1, nb_filters = transition_layer(X1, nb_filters,
-                                      compression)
+    X1, nb_filters = dense_block(X1, nb_filters, growth_rate, 12)
+    X1, nb_filters = transition_layer(X1, nb_filters, compression)
 
-    # Dense Block 3
-    X1, nb_filters = dense_block(X1, nb_filters,
-                                 growth_rate, 24)
-    X1, nb_filters = transition_layer(X1, nb_filters,
-                                      compression)
+    X1, nb_filters = dense_block(X1, nb_filters, growth_rate, 24)
+    X1, nb_filters = transition_layer(X1, nb_filters, compression)
 
-    # Dense Block 4
-    X1, nb_filters = dense_block(X1, nb_filters,
-                                 growth_rate, 16)
+    X1, nb_filters = dense_block(X1, nb_filters, growth_rate, 16)
 
-    # Final layers
-    X1 = K.layers.BatchNormalization(axis=3)(X1)
-    X1 = K.layers.Activation('relu')(X1)
     X1 = K.layers.AveragePooling2D((7, 7))(X1)
-
-    X1 = K.layers.Dense(1000,
-                         activation='softmax',
-                         kernel_initializer=init)(X1)
+    X1 = K.layers.Dense(1000, activation='softmax',
+                        kernel_initializer=init)(X1)
 
     model = K.models.Model(inputs=X, outputs=X1)
     return model
