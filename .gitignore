@@ -4,8 +4,5 @@ __pycache__/
 *.pyc
 venv/
 .venv/
-**/tf-env/
-tf-env/
-**/tf-env/
 tf-env/
 **/tf-env/
