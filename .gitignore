@@ -1,8 +1,54 @@
-data/
-*.npz
+# Python
 __pycache__/
-*.pyc
-venv/
-.venv/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# Virtual environments
 tf-env/
-**/tf-env/
+venv/
+.env/
+.venv/
+env/
+
+# ML / large model files
+*.h5
+*.keras
+*.pb
+*.tflite
+*.onnx
+*.ckpt
+*.weights
+*.npz
+
+# Object detection project data
+supervised_learning/object_detection/yolo.h5
+supervised_learning/object_detection/yolo_images.zip
+supervised_learning/object_detection/yolo_images/
+supervised_learning/object_detection/detections/
+
+# Jupyter / notebooks
+.ipynb_checkpoints/
+
+# Testing / coverage
+.coverage
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+
+# Editor / OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
