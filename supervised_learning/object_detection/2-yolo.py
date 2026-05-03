@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """YOLO object detection"""
 
-import numpy as np
 import tensorflow.keras as K
+import numpy as np
 
 
 class Yolo:
@@ -23,39 +23,43 @@ class Yolo:
         box_confidences = []
         box_class_probs = []
 
-        input_h = self.model.input.shape[1]
-        input_w = self.model.input.shape[2]
-        image_h, image_w = image_size
+        image_h = image_size[0]
+        image_w = image_size[1]
 
         for i, output in enumerate(outputs):
-            grid_h, grid_w, anchor_boxes, _ = output.shape
+            grid_h = output.shape[0]
+            grid_w = output.shape[1]
+            anchor_boxes = output.shape[2]
 
-            tx = output[..., 0]
-            ty = output[..., 1]
-            tw = output[..., 2]
-            th = output[..., 3]
+            t_x = output[..., 0]
+            t_y = output[..., 1]
+            t_w = output[..., 2]
+            t_h = output[..., 3]
 
             box_confidence = 1 / (1 + np.exp(-output[..., 4:5]))
             box_class_prob = 1 / (1 + np.exp(-output[..., 5:]))
 
-            cx = np.arange(grid_w).reshape(1, grid_w, 1)
-            cy = np.arange(grid_h).reshape(grid_h, 1, 1)
+            c_x = np.arange(grid_w).reshape(1, grid_w, 1)
+            c_y = np.arange(grid_h).reshape(grid_h, 1, 1)
 
-            bx = (1 / (1 + np.exp(-tx)) + cx) / grid_w
-            by = (1 / (1 + np.exp(-ty)) + cy) / grid_h
+            b_x = (1 / (1 + np.exp(-t_x)) + c_x) / grid_w
+            b_y = (1 / (1 + np.exp(-t_y)) + c_y) / grid_h
 
             anchor_w = self.anchors[i, :, 0].reshape(1, 1, anchor_boxes)
             anchor_h = self.anchors[i, :, 1].reshape(1, 1, anchor_boxes)
 
-            bw = (np.exp(tw) * anchor_w) / input_w
-            bh = (np.exp(th) * anchor_h) / input_h
+            input_h = self.model.input.shape[1]
+            input_w = self.model.input.shape[2]
 
-            x1 = (bx - bw / 2) * image_w
-            y1 = (by - bh / 2) * image_h
-            x2 = (bx + bw / 2) * image_w
-            y2 = (by + bh / 2) * image_h
+            b_w = (np.exp(t_w) * anchor_w) / input_w
+            b_h = (np.exp(t_h) * anchor_h) / input_h
 
-            box = np.zeros(output[..., 0:4].shape)
+            x1 = (b_x - b_w / 2) * image_w
+            y1 = (b_y - b_h / 2) * image_h
+            x2 = (b_x + b_w / 2) * image_w
+            y2 = (b_y + b_h / 2) * image_h
+
+            box = np.zeros(output[..., :4].shape)
             box[..., 0] = x1
             box[..., 1] = y1
             box[..., 2] = x2
@@ -73,9 +77,9 @@ class Yolo:
         box_classes = []
         box_scores = []
 
-        for box, confidence, class_prob in zip(
+        for box, confidence, class_probs in zip(
                 boxes, box_confidences, box_class_probs):
-            scores = confidence * class_prob
+            scores = confidence * class_probs
             classes = np.argmax(scores, axis=-1)
             class_scores = np.max(scores, axis=-1)
             mask = class_scores >= self.class_t
