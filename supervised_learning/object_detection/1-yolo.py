@@ -11,7 +11,6 @@ class Yolo:
     def __init__(self, model_path, classes_path,
                  class_t, nms_t, anchors):
         """Initialize YOLO"""
-
         self.model = K.models.load_model(model_path)
 
         with open(classes_path, 'r') as f:
@@ -27,7 +26,6 @@ class Yolo:
 
     def process_outputs(self, outputs, image_size):
         """Process outputs"""
-
         boxes = []
         box_confidences = []
         box_class_probs = []
@@ -58,11 +56,8 @@ class Yolo:
             by = (self.sigmoid(ty) + cy) / grid_h
 
             anchors = self.anchors[i]
-            pw = anchors[:, 0]
-            ph = anchors[:, 1]
-
-            pw = pw.reshape((1, 1, anchor_boxes))
-            ph = ph.reshape((1, 1, anchor_boxes))
+            pw = anchors[:, 0].reshape(1, 1, anchor_boxes)
+            ph = anchors[:, 1].reshape(1, 1, anchor_boxes)
 
             bw = (np.exp(tw) * pw) / input_w
             bh = (np.exp(th) * ph) / input_h
@@ -72,7 +67,11 @@ class Yolo:
             x2 = (bx + bw / 2) * img_w
             y2 = (by + bh / 2) * img_h
 
-            box = np.stack([x1, y1, x2, y2], axis=-1)
+            box = np.zeros_like(output[..., :4])
+            box[..., 0] = x1
+            box[..., 1] = y1
+            box[..., 2] = x2
+            box[..., 3] = y2
 
             boxes.append(box)
             box_confidences.append(box_conf)
