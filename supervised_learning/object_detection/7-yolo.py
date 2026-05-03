@@ -195,3 +195,26 @@ class Yolo:
             cv2.imwrite(os.path.join("detections", file_name), image)
 
         cv2.destroyAllWindows()
+
+    def predict(self, folder_path):
+        """Predict boxes for images"""
+        images, image_paths = self.load_images(folder_path)
+        image_paths, images = zip(*sorted(zip(image_paths, images),
+                                          key=lambda x: x[0]))
+        pimages, image_shapes = self.preprocess_images(images)
+        outputs = self.model.predict(pimages)
+        predictions = []
+
+        for i, image in enumerate(images):
+            boxes, box_confidences, box_class_probs = self.process_outputs(
+                [output[i] for output in outputs], image_shapes[i])
+            boxes, box_classes, box_scores = self.filter_boxes(
+                boxes, box_confidences, box_class_probs)
+            boxes, box_classes, box_scores = self.non_max_suppression(
+                boxes, box_classes, box_scores)
+
+            predictions.append((boxes, box_classes, box_scores))
+            file_name = os.path.basename(image_paths[i])
+            self.show_boxes(image, boxes, box_classes, box_scores, file_name)
+
+        return predictions, list(image_paths)
