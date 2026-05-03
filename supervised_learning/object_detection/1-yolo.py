@@ -8,8 +8,7 @@ import numpy as np
 class Yolo:
     """YOLO v3 model"""
 
-    def __init__(self, model_path, classes_path,
-                 class_t, nms_t, anchors):
+    def __init__(self, model_path, classes_path, class_t, nms_t, anchors):
         """Initialize YOLO"""
         self.model = K.models.load_model(model_path)
 
@@ -20,61 +19,50 @@ class Yolo:
         self.nms_t = nms_t
         self.anchors = anchors
 
-    def sigmoid(self, x):
-        """Sigmoid"""
-        return 1 / (1 + np.exp(-x))
-
     def process_outputs(self, outputs, image_size):
         """Process outputs"""
         boxes = []
         box_confidences = []
         box_class_probs = []
 
-        input_h = self.model.input.shape[1]
-        input_w = self.model.input.shape[2]
-        img_h, img_w = image_size
+        input_h = int(self.model.input.shape[1])
+        input_w = int(self.model.input.shape[2])
+        image_h, image_w = image_size
 
         for i, output in enumerate(outputs):
             grid_h, grid_w, anchor_boxes, _ = output.shape
 
-            tx = output[..., 0]
-            ty = output[..., 1]
-            tw = output[..., 2]
-            th = output[..., 3]
+            t_x = output[..., 0]
+            t_y = output[..., 1]
+            t_w = output[..., 2]
+            t_h = output[..., 3]
 
-            box_conf = self.sigmoid(output[..., 4:5])
-            class_probs = self.sigmoid(output[..., 5:])
+            c_x = np.arange(grid_w)
+            c_y = np.arange(grid_h)
+            c_x, c_y = np.meshgrid(c_x, c_y)
 
-            cx = np.arange(grid_w)
-            cy = np.arange(grid_h)
-            cx, cy = np.meshgrid(cx, cy)
+            c_x = np.expand_dims(c_x, axis=-1)
+            c_y = np.expand_dims(c_y, axis=-1)
 
-            cx = np.expand_dims(cx, axis=-1)
-            cy = np.expand_dims(cy, axis=-1)
-
-            bx = (self.sigmoid(tx) + cx) / grid_w
-            by = (self.sigmoid(ty) + cy) / grid_h
+            b_x = (1 / (1 + np.exp(-t_x)) + c_x) / grid_w
+            b_y = (1 / (1 + np.exp(-t_y)) + c_y) / grid_h
 
             anchors = self.anchors[i]
-            pw = anchors[:, 0].reshape(1, 1, anchor_boxes)
-            ph = anchors[:, 1].reshape(1, 1, anchor_boxes)
+            p_w = anchors[:, 0].reshape(1, 1, anchor_boxes)
+            p_h = anchors[:, 1].reshape(1, 1, anchor_boxes)
 
-            bw = (np.exp(tw) * pw) / input_w
-            bh = (np.exp(th) * ph) / input_h
+            b_w = (np.exp(t_w) * p_w) / input_w
+            b_h = (np.exp(t_h) * p_h) / input_h
 
-            x1 = (bx - bw / 2) * img_w
-            y1 = (by - bh / 2) * img_h
-            x2 = (bx + bw / 2) * img_w
-            y2 = (by + bh / 2) * img_h
+            box = np.zeros(output[..., :4].shape)
 
-            box = np.zeros_like(output[..., :4])
-            box[..., 0] = x1
-            box[..., 1] = y1
-            box[..., 2] = x2
-            box[..., 3] = y2
+            box[..., 0] = (b_x - b_w / 2) * image_w
+            box[..., 1] = (b_y - b_h / 2) * image_h
+            box[..., 2] = (b_x + b_w / 2) * image_w
+            box[..., 3] = (b_y + b_h / 2) * image_h
 
             boxes.append(box)
-            box_confidences.append(box_conf)
-            box_class_probs.append(class_probs)
+            box_confidences.append(1 / (1 + np.exp(-output[..., 4:5])))
+            box_class_probs.append(1 / (1 + np.exp(-output[..., 5:])))
 
         return boxes, box_confidences, box_class_probs
