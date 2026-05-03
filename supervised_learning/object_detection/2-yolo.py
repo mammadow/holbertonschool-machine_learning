@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """YOLO object detection"""
 
-import tensorflow.keras as K
 import numpy as np
+import tensorflow.keras as K
 
 
 class Yolo:
@@ -23,6 +23,8 @@ class Yolo:
         box_confidences = []
         box_class_probs = []
 
+        input_h = self.model.input.shape[1]
+        input_w = self.model.input.shape[2]
         image_h, image_w = image_size
 
         for i, output in enumerate(outputs):
@@ -45,9 +47,6 @@ class Yolo:
             anchor_w = self.anchors[i, :, 0].reshape(1, 1, anchor_boxes)
             anchor_h = self.anchors[i, :, 1].reshape(1, 1, anchor_boxes)
 
-            input_h = self.model.input.shape[1]
-            input_w = self.model.input.shape[2]
-
             bw = (np.exp(tw) * anchor_w) / input_w
             bh = (np.exp(th) * anchor_h) / input_h
 
@@ -56,7 +55,7 @@ class Yolo:
             x2 = (bx + bw / 2) * image_w
             y2 = (by + bh / 2) * image_h
 
-            box = np.zeros(output[..., :4].shape)
+            box = np.zeros(output[..., 0:4].shape)
             box[..., 0] = x1
             box[..., 1] = y1
             box[..., 2] = x2
@@ -74,9 +73,9 @@ class Yolo:
         box_classes = []
         box_scores = []
 
-        for box, confidence, class_probs in zip(
+        for box, confidence, class_prob in zip(
                 boxes, box_confidences, box_class_probs):
-            scores = confidence * class_probs
+            scores = confidence * class_prob
             classes = np.argmax(scores, axis=-1)
             class_scores = np.max(scores, axis=-1)
             mask = class_scores >= self.class_t
