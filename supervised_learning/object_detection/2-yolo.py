@@ -26,6 +26,9 @@ class Yolo:
         image_h = image_size[0]
         image_w = image_size[1]
 
+        input_w = self.model.input.shape[1]
+        input_h = self.model.input.shape[2]
+
         for i, output in enumerate(outputs):
             grid_h = output.shape[0]
             grid_w = output.shape[1]
@@ -47,9 +50,6 @@ class Yolo:
 
             anchor_w = self.anchors[i, :, 0].reshape(1, 1, anchor_boxes)
             anchor_h = self.anchors[i, :, 1].reshape(1, 1, anchor_boxes)
-
-            input_h = self.model.input.shape[1]
-            input_w = self.model.input.shape[2]
 
             b_w = (np.exp(t_w) * anchor_w) / input_w
             b_h = (np.exp(t_h) * anchor_h) / input_h
@@ -79,17 +79,17 @@ class Yolo:
 
         for box, confidence, class_probs in zip(
                 boxes, box_confidences, box_class_probs):
-            scores = confidence * class_probs
-            classes = np.argmax(scores, axis=-1)
-            class_scores = np.max(scores, axis=-1)
-            mask = class_scores >= self.class_t
+            box_score = confidence * class_probs
+            box_class = np.argmax(box_score, axis=-1)
+            box_class_score = np.max(box_score, axis=-1)
+            filtering_mask = box_class_score >= self.class_t
 
-            filtered_boxes.append(box[mask])
-            box_classes.append(classes[mask])
-            box_scores.append(class_scores[mask])
+            filtered_boxes.append(box[filtering_mask])
+            box_classes.append(box_class[filtering_mask])
+            box_scores.append(box_class_score[filtering_mask])
 
-        filtered_boxes = np.concatenate(filtered_boxes, axis=0)
-        box_classes = np.concatenate(box_classes, axis=0)
-        box_scores = np.concatenate(box_scores, axis=0)
+        filtered_boxes = np.concatenate(filtered_boxes)
+        box_classes = np.concatenate(box_classes)
+        box_scores = np.concatenate(box_scores)
 
         return filtered_boxes, box_classes, box_scores
