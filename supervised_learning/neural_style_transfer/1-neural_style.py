@@ -89,9 +89,23 @@ class NST:
         for layer in vgg.layers:
             layer.trainable = False
 
+        vgg_config = vgg.get_config()
+
+        for layer in vgg_config['layers']:
+            if layer['class_name'] == 'MaxPooling2D':
+                layer['class_name'] = 'AveragePooling2D'
+
+        avg_vgg = tf.keras.Model.from_config(vgg_config)
+        avg_vgg.set_weights(vgg.get_weights())
+
+        avg_vgg.trainable = False
+
+        for layer in avg_vgg.layers:
+            layer.trainable = False
+
         outputs = [
-            vgg.get_layer(name).output
+            avg_vgg.get_layer(name).output
             for name in self.style_layers + [self.content_layer]
         ]
 
-        self.model = tf.keras.Model(inputs=vgg.input, outputs=outputs)
+        self.model = tf.keras.Model(inputs=avg_vgg.input, outputs=outputs)
