@@ -44,7 +44,9 @@ class NST:
         self.content_image = self.scale_image(content_image)
         self.alpha = alpha
         self.beta = beta
+
         self.load_model()
+        self.generate_features()
 
     @staticmethod
     def scale_image(image):
@@ -129,12 +131,21 @@ class NST:
 
     def generate_features(self):
         """Extract style and content features."""
-        style_outputs = self.model(self.style_image)
-        content_outputs = self.model(self.content_image)
+        style_image = tf.keras.applications.vgg19.preprocess_input(
+            self.style_image * 255
+        )
+        content_image = tf.keras.applications.vgg19.preprocess_input(
+            self.content_image * 255
+        )
+
+        style_outputs = self.model(style_image)
+        content_outputs = self.model(content_image)
+
+        self.style_features = style_outputs[:len(self.style_layers)]
 
         self.gram_style_features = [
-            self.gram_matrix(style_layer)
-            for style_layer in style_outputs[:-1]
+            self.gram_matrix(style_feature)
+            for style_feature in self.style_features
         ]
 
         self.content_feature = content_outputs[-1]
