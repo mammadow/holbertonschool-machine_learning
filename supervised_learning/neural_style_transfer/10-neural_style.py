@@ -219,6 +219,10 @@ class NST:
     @staticmethod
     def variational_cost(generated_image):
         """Calculate the variational cost for the generated image."""
+        if (not isinstance(generated_image, (tf.Tensor, tf.Variable)) or
+                len(generated_image.shape) not in [3, 4]):
+            raise TypeError("image must be a tensor of rank 3 or 4")
+
         return tf.reduce_sum(tf.image.total_variation(generated_image))
 
     def total_cost(self, generated_image):
@@ -261,6 +265,7 @@ class NST:
             )
 
         with tf.GradientTape() as tape:
+            tape.watch(generated_image)
             J_total, J_content, J_style, J_var = self.total_cost(
                 generated_image
             )
@@ -282,9 +287,7 @@ class NST:
             raise TypeError("step must be an integer")
 
         if step is not None and (step <= 0 or step >= iterations):
-            raise ValueError(
-                "iterations must be positive and less than iterations"
-            )
+            raise ValueError("step must be positive and less than iterations")
 
         if not isinstance(lr, (int, float)):
             raise TypeError("lr must be a number")
