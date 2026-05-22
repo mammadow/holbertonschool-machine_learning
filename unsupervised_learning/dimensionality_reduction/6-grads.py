@@ -8,11 +8,11 @@ def grads(Y, P):
     """Calculates gradients of Y and Q affinities."""
     Q, num = Q_affinities(Y)
 
-    PQ = P - Q
-
     diff = Y[:, None, :] - Y[None, :, :]
-    mult = (PQ + PQ.T) * num
 
-    dY = np.sum(mult[:, :, None] * diff, axis=1)
+    PQ = P - Q
+    sym = PQ + PQ.T
+
+    dY = np.sum(sym[:, :, None] * num[:, :, None] * diff, axis=1)
 
     return dY, Q
