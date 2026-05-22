@@ -8,5 +8,5 @@ def pca(X, var=0.95):
     ev = S ** 2
     vr = ev / np.sum(ev)
     cvr = np.cumsum(vr)
-    nd = np.argmax(cvr >= var) + 1
+    nd = np.sum(cvr < var) + 1
     return Vt.T[:, :nd]
