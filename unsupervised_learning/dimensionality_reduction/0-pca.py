@@ -6,8 +6,11 @@ import numpy as np
 def pca(X, var=0.95):
     """Performs PCA on a dataset using SVD."""
     u, s, vh = np.linalg.svd(X)
-    ev = s ** 2
-    cum = np.cumsum(ev)
-    thresh = cum[-1] * var
-    idx = np.where(cum >= thresh)[0][0] + 1
-    return vh.T[:, :idx]
+    cum = np.cumsum(s)
+    thresh = cum[len(cum) - 1] * var
+    mask = np.where(thresh > cum)
+    var = cum[mask]
+    idx = len(var) + 1
+    W = vh.T
+    Wr = W[:, 0:idx]
+    return Wr
