@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
-"""PCA implementation using SVD"""
-
+"""Performs PCA on a dataset using SVD."""
 import numpy as np
 
 
 def pca(X, var=0.95):
-    """Performs PCA on a dataset."""
-    _, S, Vt = np.linalg.svd(X, full_matrices=False)
-    ev = S ** 2
-    vr = ev / np.sum(ev)
-    cvr = np.cumsum(vr)
-    nd = np.argmax(cvr >= var) + 1
-    return Vt.T[:, :nd]
+    """Performs PCA on a dataset using SVD."""
+    u, s, vh = np.linalg.svd(X)
+    ev = s ** 2
+    cum = np.cumsum(ev)
+    thresh = cum[-1] * var
+    idx = np.where(cum >= thresh)[0][0] + 1
+    return vh.T[:, :idx]
