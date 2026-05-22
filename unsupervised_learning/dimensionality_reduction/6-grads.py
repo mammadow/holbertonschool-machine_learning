@@ -9,13 +9,10 @@ def grads(Y, P):
     Q, num = Q_affinities(Y)
 
     PQ = P - Q
-    n, ndim = Y.shape
 
-    dY = np.zeros((n, ndim))
+    diff = Y[:, None, :] - Y[None, :, :]
+    mult = (PQ + PQ.T) * num
 
-    for i in range(n):
-        diff = Y[i] - Y
-        mult = (PQ[i] + PQ[:, i])[:, None] * num[i][:, None]
-        dY[i] = np.sum(mult * diff, axis=0)
+    dY = np.sum(mult[:, :, None] * diff, axis=1)
 
     return dY, Q
