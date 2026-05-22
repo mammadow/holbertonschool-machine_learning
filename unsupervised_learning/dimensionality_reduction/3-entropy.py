@@ -8,5 +8,5 @@ def HP(Di, beta):
     P = np.exp(-Di * beta)
     sumP = np.sum(P)
     P = P / sumP
-    Hi = -np.sum(P * np.log2(P + 1e-10))
+    Hi = -np.sum(P * np.log2(P))
     return Hi, P
