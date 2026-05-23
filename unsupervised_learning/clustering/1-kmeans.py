@@ -22,8 +22,9 @@ def kmeans(X, k, iterations=1000):
         for _ in range(iterations):
 
             # --- Assignment step ---
-            dists = np.linalg.norm(X[:, np.newaxis] - C, axis=2)
-            clss = np.argmin(dists, axis=1)
+            diff = X[:, np.newaxis, :] - C[np.newaxis, :, :]
+            dist = np.sum(diff ** 2, axis=2)
+            clss = np.argmin(dist, axis=1)
 
             new_C = np.zeros_like(C)
 
@@ -31,7 +32,7 @@ def kmeans(X, k, iterations=1000):
             for i in range(k):
                 points = X[clss == i]
 
-                if len(points) == 0:
+                if points.shape[0] == 0:
                     new_C[i] = initialize(X, 1)
                 else:
                     new_C[i] = points.mean(axis=0)
@@ -44,8 +45,9 @@ def kmeans(X, k, iterations=1000):
             C = new_C
 
         # final assignment
-        dists = np.linalg.norm(X[:, np.newaxis] - C, axis=2)
-        clss = np.argmin(dists, axis=1)
+        diff = X[:, np.newaxis, :] - C[np.newaxis, :, :]
+        dist = np.sum(diff ** 2, axis=2)
+        clss = np.argmin(dist, axis=1)
 
         return C, clss
 
