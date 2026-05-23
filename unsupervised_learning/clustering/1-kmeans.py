@@ -28,7 +28,8 @@ def kmeans(X, k, iterations=1000):
             for i in range(k):
                 pts = X[clss == i]
                 if pts.shape[0] == 0:
-                    centroids[i] = np.random.uniform(mins, maxs, size=X.shape[1])
+                    centroids[i] = np.random.uniform(
+                            mins, maxs, size=X.shape[1])
                 else:
                     centroids[i] = pts.mean(axis=0)
 
