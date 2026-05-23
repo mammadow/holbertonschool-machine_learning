@@ -2,7 +2,6 @@
 """Performs K-means clustering"""
 
 import numpy as np
-initialize = __import__('0-initialize').initialize
 
 
 def kmeans(X, k, iterations=1000):
@@ -15,37 +14,32 @@ def kmeans(X, k, iterations=1000):
         return None, None
 
     try:
-        C = initialize(X, k)
-        if C is None:
-            return None, None
+        mins = X.min(axis=0)
+        maxs = X.max(axis=0)
+        centroids = np.random.uniform(mins, maxs, size=(k, X.shape[1]))
 
         for _ in range(iterations):
+            old = centroids.copy()
 
-            diff = X[:, np.newaxis, :] - C[np.newaxis, :, :]
+            diff = X[:, np.newaxis, :] - centroids[np.newaxis, :, :]
             dist = np.sum(diff ** 2, axis=2)
             clss = np.argmin(dist, axis=1)
 
-            new_C = np.zeros_like(C)
-
             for i in range(k):
-                points = X[clss == i]
-
-                if points.shape[0] == 0:
-                    new_C[i] = initialize(X, 1)
+                pts = X[clss == i]
+                if pts.shape[0] == 0:
+                    centroids[i] = np.random.uniform(mins, maxs, size=X.shape[1])
                 else:
-                    new_C[i] = points.mean(axis=0)
+                    centroids[i] = pts.mean(axis=0)
 
-            if np.allclose(C, new_C):
-                C = new_C
+            if np.allclose(old, centroids):
                 break
 
-            C = new_C
-
-        diff = X[:, np.newaxis, :] - C[np.newaxis, :, :]
+        diff = X[:, np.newaxis, :] - centroids[np.newaxis, :, :]
         dist = np.sum(diff ** 2, axis=2)
         clss = np.argmin(dist, axis=1)
 
-        return C, clss
+        return centroids, clss
 
     except Exception:
         return None, None
