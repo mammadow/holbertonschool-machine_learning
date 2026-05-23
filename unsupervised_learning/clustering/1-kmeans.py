@@ -21,14 +21,12 @@ def kmeans(X, k, iterations=1000):
 
         for _ in range(iterations):
 
-            # --- Assignment step ---
             diff = X[:, np.newaxis, :] - C[np.newaxis, :, :]
             dist = np.sum(diff ** 2, axis=2)
             clss = np.argmin(dist, axis=1)
 
             new_C = np.zeros_like(C)
 
-            # --- Update step ---
             for i in range(k):
                 points = X[clss == i]
 
@@ -37,14 +35,12 @@ def kmeans(X, k, iterations=1000):
                 else:
                     new_C[i] = points.mean(axis=0)
 
-            # --- Convergence check ---
             if np.allclose(C, new_C):
                 C = new_C
                 break
 
             C = new_C
 
-        # final assignment
         diff = X[:, np.newaxis, :] - C[np.newaxis, :, :]
         dist = np.sum(diff ** 2, axis=2)
         clss = np.argmin(dist, axis=1)
