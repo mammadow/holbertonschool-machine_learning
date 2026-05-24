@@ -1,27 +1,22 @@
 #!/usr/bin/env python3
-"""
-Finds the best number of clusters for a GMM using BIC.
-"""
+"""Bayesian Information Criterion for selecting the best number of
+clusters in a Gaussian Mixture Model."""
+
 import numpy as np
 expectation_maximization = __import__('8-EM').expectation_maximization
 
 
 def BIC(X, kmin=1, kmax=None, iterations=1000, tol=1e-5, verbose=False):
+    """Finds the best number of clusters for a GMM using the Bayesian
+    Information Criterion.
     """
-    Computes the best k using Bayesian Information Criterion.
-    """
-
     if not isinstance(X, np.ndarray) or X.ndim != 2:
         return None, None, None, None
-    if kmax is None:
-        kmax = X.shape[0]
-    if not isinstance(kmin, int) or kmin <= 0 or kmin >= X.shape[0]:
+    if not isinstance(kmin, int) or kmin < 1:
         return None, None, None, None
-    if not isinstance(kmax, int) or kmax <= 0 or kmax > X.shape[0]:
+    if kmax is not None and (not isinstance(kmax, int) or kmax < 1):
         return None, None, None, None
-    if kmin > kmax:
-        return None, None, None, None
-    if not isinstance(iterations, int) or iterations <= 0:
+    if not isinstance(iterations, int) or iterations < 1:
         return None, None, None, None
     if not isinstance(tol, float) or tol < 0:
         return None, None, None, None
@@ -29,36 +24,29 @@ def BIC(X, kmin=1, kmax=None, iterations=1000, tol=1e-5, verbose=False):
         return None, None, None, None
 
     n, d = X.shape
+    if kmax is None:
+        kmax = n
+    if kmax <= kmin:
+        return None, None, None, None
 
-    pis = []
-    means = []
-    covs = []
-    logs = []
-    bics = []
+    k_range = kmax - kmin + 1
+    log_likelihoods = np.empty(k_range)
+    bics = np.empty(k_range)
+    results = []
 
-    for k in range(kmin, kmax + 1):
-        pi, m, S, g, log_l = expectation_maximization(
-            X, k, iterations, tol, verbose
-        )
-
+    for i in range(k_range):
+        k = kmin + i
+        pi, m, S, _, ll = expectation_maximization(
+            X, k, iterations, tol, verbose)
         if pi is None:
             return None, None, None, None
+        results.append((pi, m, S))
+        p = (k - 1) + (k * d) + (k * d * (d + 1) // 2)
+        log_likelihoods[i] = ll
+        bics[i] = p * np.log(n) - 2 * ll
 
-        pis.append(pi)
-        means.append(m)
-        covs.append(S)
-        logs.append(log_l)
-
-        p = (k * d * (d + 1) / 2) + (d * k) + (k - 1)
-        bic = p * np.log(n) - 2 * log_l
-        bics.append(bic)
-
-    logs = np.array(logs)
-    bics = np.array(bics)
-
-    best_idx = np.argmin(bics)
-
+    best_idx = int(np.argmin(bics))
     best_k = kmin + best_idx
-    best_result = (pis[best_idx], means[best_idx], covs[best_idx])
+    best_result = results[best_idx]
 
-    return best_k, best_result, logs, bics
+    return best_k, best_result, log_likelihoods, bics
