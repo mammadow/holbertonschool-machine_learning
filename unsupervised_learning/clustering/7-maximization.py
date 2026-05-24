@@ -1,44 +1,45 @@
 #!/usr/bin/env python3
-"""Maximization step for GMM"""
-
+"""
+Calculates the maximization step in the EM algorithm for a GMM
+"""
 import numpy as np
 
 
 def maximization(X, g):
-    """Performs the maximization step"""
-    if not isinstance(X, np.ndarray) or X.ndim != 2:
+    """
+    Calculates the maximization step in the EM algorithm for a GMM
+    """
+    if type(X) is not np.ndarray or len(X.shape) != 2:
         return None, None, None
 
-    if not isinstance(g, np.ndarray) or g.ndim != 2:
+    if type(g) is not np.ndarray or len(g.shape) != 2:
         return None, None, None
 
-    n, d = X.shape
-    k, n_g = g.shape
-
-    if n_g != n:
+    if X.shape[0] != g.shape[1]:
         return None, None, None
 
-    # strict validation (this is what your hidden test is failing on)
     if np.any(g < 0) or np.any(g > 1):
         return None, None, None
 
     if not np.allclose(np.sum(g, axis=0), 1):
         return None, None, None
 
-    try:
-        Nk = np.sum(g, axis=1)
-        if np.any(Nk == 0):
-            return None, None, None
+    n, d = X.shape
+    k, _ = g.shape
 
-        pi = Nk / n
-        m = (g @ X) / Nk[:, np.newaxis]
+    nk = np.sum(g, axis=1)
 
-        S = np.zeros((k, d, d))
-        for i in range(k):
-            diff = X - m[i]
-            S[i] = (g[i][:, np.newaxis] * diff).T @ diff / Nk[i]
-
-        return pi, m, S
-
-    except Exception:
+    if np.any(nk == 0):
         return None, None, None
+
+    pi = nk / n
+
+    mean = np.zeros((k, d))
+    cov = np.zeros((k, d, d))
+
+    for i in range(k):
+        mean[i] = np.matmul(g[i], X) / nk[i]
+        diff = X - mean[i]
+        cov[i] = np.matmul((g[i][:, np.newaxis] * diff).T, diff) / nk[i]
+
+    return pi, mean, cov
