@@ -13,6 +13,12 @@ def optimum_k(X, kmin=1, kmax=None, iterations=1000):
         return None, None
     if not isinstance(kmin, int) or kmin <= 0:
         return None, None
+
+    n = X.shape[0]
+
+    if kmax is None:
+        kmax = n
+
     if not isinstance(kmax, int) or kmax <= 0:
         return None, None
     if kmin >= kmax:
@@ -26,6 +32,7 @@ def optimum_k(X, kmin=1, kmax=None, iterations=1000):
 
         for k in range(kmin, kmax + 1):
             C, clss = kmeans(X, k, iterations)
+
             if C is None or clss is None:
                 return None, None
 
