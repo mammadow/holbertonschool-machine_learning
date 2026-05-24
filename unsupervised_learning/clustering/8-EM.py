@@ -21,24 +21,24 @@ def expectation_maximization(X, k, iterations=1000, tol=1e-5, verbose=False):
         return None, None, None, None, None
 
     i = 0
-    l_prev = 0
+    prev_ll = 0
 
     pi, m, S = initialize(X, k)
-    g, l = expectation(X, pi, m, S)
+    g, ll = expectation(X, pi, m, S)
 
     while i < iterations:
-        if np.abs(l_prev - l) <= tol:
+        if np.abs(prev_ll - ll) <= tol:
             break
-        l_prev = l
+        prev_ll = ll
 
         if verbose and (i % 10 == 0):
-            print("Log Likelihood after {} iterations: {:.5f}".format(i, l))
+            print("Log Likelihood after {} iterations: {:.5f}".format(i, ll))
 
         pi, m, S = maximization(X, g)
-        g, l = expectation(X, pi, m, S)
+        g, ll = expectation(X, pi, m, S)
         i += 1
 
     if verbose:
-        print("Log Likelihood after {} iterations: {:.5f}".format(i, l))
+        print("Log Likelihood after {} iterations: {:.5f}".format(i, ll))
 
-    return pi, m, S, g, l
+    return pi, m, S, g, ll
