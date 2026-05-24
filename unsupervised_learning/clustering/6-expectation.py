@@ -6,28 +6,48 @@ pdf = __import__('5-pdf').pdf
 
 
 def expectation(X, pi, m, S):
-    """Calculates expectation step for a GMM"""
-    if (not isinstance(X, np.ndarray) or not isinstance(pi, np.ndarray) or
-        not isinstance(m, np.ndarray) or not isinstance(S, np.ndarray)):
-        return None, None
-    if X.ndim != 2 or pi.ndim != 1 or m.ndim != 2 or S.ndim != 3:
-        return None, None
-    if X.shape[0] == 0 or pi.shape[0] != m.shape[0] or S.shape[0] != m.shape[0]:
-        return None, None
-    if m.shape[1] != X.shape[1] or S.shape[1] != S.shape[2]:
+    """Calculates the expectation step for a GMM"""
+    if (not isinstance(X, np.ndarray) or
+            not isinstance(pi, np.ndarray) or
+            not isinstance(m, np.ndarray) or
+            not isinstance(S, np.ndarray)):
         return None, None
 
-    k, n = pi.shape[0], X.shape[0]
+    if X.ndim != 2 or pi.ndim != 1 or m.ndim != 2 or S.ndim != 3:
+        return None, None
+
+    n, d = X.shape
+    k = pi.shape[0]
+
+    if m.shape != (k, d):
+        return None, None
+
+    if S.shape != (k, d, d):
+        return None, None
+
+    if not np.isclose(np.sum(pi), 1):
+        return None, None
+
+    if np.any(pi < 0):
+        return None, None
 
     g = np.zeros((k, n))
 
     for i in range(k):
-        g[i] = pi[i] * pdf(X, m[i], S[i])
+        P = pdf(X, m[i], S[i])
 
-    total = np.sum(g, axis=0, keepdims=True)
+        if P is None:
+            return None, None
 
-    g = g / total
+        g[i] = pi[i] * P
+
+    total = np.sum(g, axis=0)
+
+    if np.any(total == 0):
+        return None, None
 
     l = np.sum(np.log(total))
+
+    g = g / total
 
     return g, l
