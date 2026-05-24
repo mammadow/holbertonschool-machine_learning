@@ -1,33 +1,44 @@
 #!/usr/bin/env python3
-"""Performs the maximization step in the EM algorithm for a GMM"""
+"""Maximization step"""
 
 import numpy as np
 
 
 def maximization(X, g):
-    """Calculates the maximization step for a GMM"""
-    if not isinstance(X, np.ndarray) or not isinstance(g, np.ndarray):
+    """calculates the maximization step"""
+    if not isinstance(X, np.ndarray) or X.ndim != 2:
         return None, None, None
 
-    if X.ndim != 2 or g.ndim != 2:
+    if not isinstance(g, np.ndarray) or g.ndim != 2:
         return None, None, None
 
     n, d = X.shape
-    k, ng = g.shape
+    k, n_g = g.shape
 
-    if n != ng:
+    if n != n_g:
         return None, None, None
 
-    nk = np.sum(g, axis=1)
+    if np.any(g < 0) or np.any(g > 1):
+        return None, None, None
 
-    pi = nk / n
+    if not np.allclose(np.sum(g, axis=0), np.ones(n)):
+        return None, None, None
 
-    m = (g @ X) / nk[:, np.newaxis]
+    try:
+        Nk = np.sum(g, axis=1)
 
-    S = np.zeros((k, d, d))
+        pi = Nk / n
 
-    for i in range(k):
-        diff = X - m[i]
-        S[i] = ((g[i][:, np.newaxis] * diff).T @ diff) / nk[i]
+        m = (g @ X) / Nk[:, np.newaxis]
 
-    return pi, m, S
+        S = np.zeros((k, d, d))
+
+        for i in range(k):
+            diff = X - m[i]
+            weighted = g[i][:, np.newaxis] * diff
+            S[i] = (weighted.T @ diff) / Nk[i]
+
+        return pi, m, S
+
+    except Exception:
+        return None, None, None
