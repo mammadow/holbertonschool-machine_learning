@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Fits a Gaussian Mixture Model using sklearn"""
-from sklearn.mixture import GaussianMixture
+import sklearn.mixture
 
 
 def gmm(X, k):
@@ -10,7 +10,10 @@ def gmm(X, k):
     if type(k) is not int or k <= 0:
         return None, None, None, None, None
 
-    model = GaussianMixture(n_components=k, covariance_type='full')
+    model = sklearn.mixture.GaussianMixture(
+        n_components=k,
+        covariance_type='full'
+    )
     model.fit(X)
 
     pi = model.weights_
