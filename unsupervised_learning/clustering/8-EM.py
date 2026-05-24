@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Performs the expectation-maximization algorithm for a GMM"""
+"""Performs the expectation maximization for a GMM"""
 
 import numpy as np
 initialize = __import__('4-initialize').initialize
@@ -8,7 +8,7 @@ maximization = __import__('7-maximization').maximization
 
 
 def expectation_maximization(X, k, iterations=1000, tol=1e-5, verbose=False):
-    """Performs the EM algorithm for a GMM"""
+    """Performs the expectation maximization for a GMM"""
     if type(X) is not np.ndarray or len(X.shape) != 2:
         return None, None, None, None, None
     if type(k) is not int or k <= 0:
@@ -20,27 +20,25 @@ def expectation_maximization(X, k, iterations=1000, tol=1e-5, verbose=False):
     if type(verbose) is not bool:
         return None, None, None, None, None
 
+    i = 0
+    l_prev = 0
+
     pi, m, S = initialize(X, k)
-    if pi is None:
-        return None, None, None, None, None
+    g, l = expectation(X, pi, m, S)
 
-    l = None
+    while i < iterations:
+        if np.abs(l_prev - l) <= tol:
+            break
+        l_prev = l
 
-    for i in range(iterations):
-        g, new_l = expectation(X, pi, m, S)
+        if verbose and (i % 10 == 0):
+            print("Log Likelihood after {} iterations: {:.5f}".format(i, l))
 
         pi, m, S = maximization(X, g)
-
-        if verbose and (i == 0 or i % 10 == 0):
-            print("Log Likelihood after {} iterations: {:.5f}".format(i, new_l))
-
-        if l is not None and abs(new_l - l) <= tol:
-            l = new_l
-            break
-
-        l = new_l
+        g, l = expectation(X, pi, m, S)
+        i += 1
 
     if verbose:
-        print("Log Likelihood after {} iterations: {:.5f}".format(i + 1, l))
+        print("Log Likelihood after {} iterations: {:.5f}".format(i, l))
 
     return pi, m, S, g, l
