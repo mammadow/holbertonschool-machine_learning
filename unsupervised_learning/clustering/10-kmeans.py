@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Performs K-means using sklearn"""
-from sklearn.cluster import KMeans
+import sklearn.cluster
 
 
 def kmeans(X, k):
@@ -8,7 +8,7 @@ def kmeans(X, k):
     if type(k) is not int or k <= 0:
         return None, None
 
-    model = KMeans(n_clusters=k, n_init=10)
+    model = sklearn.cluster.KMeans(n_clusters=k, n_init=10)
     model.fit(X)
 
     return model.cluster_centers_, model.labels_
