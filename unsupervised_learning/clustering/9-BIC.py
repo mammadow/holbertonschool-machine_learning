@@ -5,18 +5,21 @@ expectation_maximization = __import__('8-EM').expectation_maximization
 
 
 def BIC(X, kmin=1, kmax=None, iterations=1000, tol=1e-5, verbose=False):
-    """Find best number of clusters using BIC"""
+    """Find best k using BIC for Gaussian Mixture Model"""
 
     if not isinstance(X, np.ndarray) or X.ndim != 2:
         return None, None, None, None
-    if not isinstance(kmin, int) or kmin <= 0 or X.shape[0] <= kmin:
+    if not isinstance(kmin, int) or kmin <= 0 or kmin >= X.shape[0]:
         return None, None, None, None
 
     if kmax is None:
         kmax = X.shape[0]
-
-    if not isinstance(kmax, int) or kmax <= 0 or X.shape[0] <= kmax:
+    if not isinstance(kmax, int) or kmax <= 0 or kmax > X.shape[0]:
         return None, None, None, None
+
+    if kmax < kmin:
+        return None, None, None, None
+
     if not isinstance(iterations, int) or iterations <= 0:
         return None, None, None, None
     if not isinstance(tol, float) or tol < 0:
@@ -26,31 +29,37 @@ def BIC(X, kmin=1, kmax=None, iterations=1000, tol=1e-5, verbose=False):
 
     n, d = X.shape
 
-    all_pis = []
-    all_ms = []
-    all_Ss = []
-    all_l = []
-    all_b = []
+    results_pi = []
+    results_m = []
+    results_S = []
+    log_likelihoods = []
+    bic_values = []
 
     for k in range(kmin, kmax + 1):
         pi, m, S, g, l = expectation_maximization(
             X, k, iterations, tol, verbose
         )
 
-        if pi is None or m is None or S is None:
+        if pi is None:
             return None, None, None, None
 
-        all_pis.append(pi)
-        all_ms.append(m)
-        all_Ss.append(S)
-        all_l.append(l)
+        results_pi.append(pi)
+        results_m.append(m)
+        results_S.append(S)
+        log_likelihoods.append(l)
 
         p = (k * d * (d + 1) / 2) + (d * k) + (k - 1)
-        all_b.append(p * np.log(n) - 2 * l)
+        bic = p * np.log(n) - 2 * l
+        bic_values.append(bic)
 
-    all_l = np.array(all_l)
-    all_b = np.array(all_b)
+    log_likelihoods = np.array(log_likelihoods)
+    bic_values = np.array(bic_values)
 
-    best_k = int(np.argmin(all_b))
+    best_idx = np.argmin(bic_values)
 
-    return best_k + kmin, (all_pis[best_k], all_ms[best_k], all_Ss[best_k]), all_l, all_b
+    best_k = kmin + best_idx
+    best_result = (results_pi[best_idx],
+                   results_m[best_idx],
+                   results_S[best_idx])
+
+    return best_k, best_result, log_likelihoods, bic_values
