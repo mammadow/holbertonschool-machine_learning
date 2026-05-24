@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
-"""Computes BIC for GMM model selection"""
+"""
+9-BIC.py
+"""
 import numpy as np
 expectation_maximization = __import__('8-EM').expectation_maximization
 
 
 def BIC(X, kmin=1, kmax=None, iterations=1000, tol=1e-5, verbose=False):
-    """Selects best K using Bayesian Information Criterion"""
-    if type(X) is not np.ndarray or len(X.shape) != 2:
+    """Finds best number of clusters for GMM using BIC"""
+
+    if not isinstance(X, np.ndarray) or X.ndim != 2:
         return None, None, None, None
 
     n, d = X.shape
@@ -14,10 +17,19 @@ def BIC(X, kmin=1, kmax=None, iterations=1000, tol=1e-5, verbose=False):
     if kmax is None:
         kmax = n
 
-    if kmin < 1 or kmin > kmax:
+    if not isinstance(kmin, int) or kmin <= 0 or kmin > kmax:
+        return None, None, None, None
+    if not isinstance(kmax, int) or kmax <= 0 or kmax > n:
+        return None, None, None, None
+    if not isinstance(iterations, int) or iterations <= 0:
+        return None, None, None, None
+    if not isinstance(tol, float) or tol < 0:
+        return None, None, None, None
+    if not isinstance(verbose, bool):
         return None, None, None, None
 
     ks = np.arange(kmin, kmax + 1)
+
     l = np.zeros(len(ks))
     b = np.zeros(len(ks))
 
@@ -25,33 +37,28 @@ def BIC(X, kmin=1, kmax=None, iterations=1000, tol=1e-5, verbose=False):
     best_bic = np.inf
     best_result = None
 
+    all_pis, all_ms, all_Ss = [], [], []
+
     for i, k in enumerate(ks):
-        try:
-            pi, m, S, g, log_l = expectation_maximization(
-                X, k, iterations=iterations, tol=tol, verbose=verbose
-            )
-        except Exception:
-            continue
+        pi, m, S, g, lkhd = expectation_maximization(
+            X, k, iterations, tol, verbose
+        )
 
-        if log_l is None:
-            continue
+        if lkhd is None:
+            return None, None, None, None
 
-        l[i] = log_l
+        all_pis.append(pi)
+        all_ms.append(m)
+        all_Ss.append(S)
 
-        p = k - 1 + k * d + (k * d * (d + 1)) // 2
-        bic = p * np.log(n) - 2 * log_l
-        b[i] = bic
+        l[i] = lkhd
 
-        if bic < best_bic:
-            best_bic = bic
+        p = (k - 1) + (k * d) + (k * d * (d + 1)) / 2
+        b[i] = p * np.log(n) - 2 * lkhd
+
+        if b[i] < best_bic:
+            best_bic = b[i]
             best_k = k
             best_result = (pi, m, S)
-
-    if best_k is None:
-        return None, None, None, None
-
-    pi, m, S, g, log_l = expectation_maximization(
-        X, best_k, iterations=iterations, tol=tol, verbose=False
-    )
 
     return best_k, best_result, l, b
