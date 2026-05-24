@@ -18,10 +18,13 @@ def initialize(X, k):
 
         pi = np.full(k, 1 / k)
 
-        _, m = kmeans(X, k)
+        C, _ = kmeans(X, k)
 
-        S = np.zeros((k, d, d))
-        S[:, :, :] = np.eye(d)
+        m = C
+
+        S = np.ones((k, d, d))
+        for i in range(k):
+            S[i] = np.eye(d)
 
         return pi, m, S
 
