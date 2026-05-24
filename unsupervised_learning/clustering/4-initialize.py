@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
-"""Initializes GMM parameters"""
+"""Initializes variables for a Gaussian Mixture Model"""
 
 import numpy as np
-
 kmeans = __import__('1-kmeans').kmeans
 
 
 def initialize(X, k):
-    """Initializes variables for a Gaussian Mixture Model"""
+    """Initializes GMM parameters using K-means"""
     if not isinstance(X, np.ndarray) or X.ndim != 2:
         return None, None, None
     if not isinstance(k, int) or k <= 0:
@@ -18,13 +17,9 @@ def initialize(X, k):
 
         pi = np.full(k, 1 / k)
 
-        C, _ = kmeans(X, k)
+        m, _ = kmeans(X, k)
 
-        m = C
-
-        S = np.ones((k, d, d))
-        for i in range(k):
-            S[i] = np.eye(d)
+        S = np.tile(np.eye(d), (k, 1, 1))
 
         return pi, m, S
 
