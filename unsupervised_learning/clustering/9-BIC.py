@@ -1,25 +1,21 @@
 #!/usr/bin/env python3
-"""
-9-BIC.py
-"""
+"""Bayesian Information Criterion for GMM"""
 import numpy as np
 expectation_maximization = __import__('8-EM').expectation_maximization
 
 
 def BIC(X, kmin=1, kmax=None, iterations=1000, tol=1e-5, verbose=False):
-    """Finds best number of clusters for GMM using BIC"""
+    """Find best number of clusters using BIC"""
 
     if not isinstance(X, np.ndarray) or X.ndim != 2:
         return None, None, None, None
-
-    n, d = X.shape
+    if not isinstance(kmin, int) or kmin <= 0 or X.shape[0] <= kmin:
+        return None, None, None, None
 
     if kmax is None:
-        kmax = n
+        kmax = X.shape[0]
 
-    if not isinstance(kmin, int) or kmin <= 0 or kmin > kmax:
-        return None, None, None, None
-    if not isinstance(kmax, int) or kmax <= 0 or kmax > n:
+    if not isinstance(kmax, int) or kmax <= 0 or X.shape[0] <= kmax:
         return None, None, None, None
     if not isinstance(iterations, int) or iterations <= 0:
         return None, None, None, None
@@ -28,37 +24,33 @@ def BIC(X, kmin=1, kmax=None, iterations=1000, tol=1e-5, verbose=False):
     if not isinstance(verbose, bool):
         return None, None, None, None
 
-    ks = np.arange(kmin, kmax + 1)
+    n, d = X.shape
 
-    l = np.zeros(len(ks))
-    b = np.zeros(len(ks))
+    all_pis = []
+    all_ms = []
+    all_Ss = []
+    all_l = []
+    all_b = []
 
-    best_k = None
-    best_bic = np.inf
-    best_result = None
-
-    all_pis, all_ms, all_Ss = [], [], []
-
-    for i, k in enumerate(ks):
-        pi, m, S, g, lkhd = expectation_maximization(
+    for k in range(kmin, kmax + 1):
+        pi, m, S, g, l = expectation_maximization(
             X, k, iterations, tol, verbose
         )
 
-        if lkhd is None:
+        if pi is None or m is None or S is None:
             return None, None, None, None
 
         all_pis.append(pi)
         all_ms.append(m)
         all_Ss.append(S)
+        all_l.append(l)
 
-        l[i] = lkhd
+        p = (k * d * (d + 1) / 2) + (d * k) + (k - 1)
+        all_b.append(p * np.log(n) - 2 * l)
 
-        p = (k - 1) + (k * d) + (k * d * (d + 1)) / 2
-        b[i] = p * np.log(n) - 2 * lkhd
+    all_l = np.array(all_l)
+    all_b = np.array(all_b)
 
-        if b[i] < best_bic:
-            best_bic = b[i]
-            best_k = k
-            best_result = (pi, m, S)
+    best_k = int(np.argmin(all_b))
 
-    return best_k, best_result, l, b
+    return best_k + kmin, (all_pis[best_k], all_ms[best_k], all_Ss[best_k]), all_l, all_b
