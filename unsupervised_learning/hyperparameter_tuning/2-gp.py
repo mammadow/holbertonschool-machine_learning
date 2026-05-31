@@ -27,7 +27,7 @@ class GaussianProcess:
         Radial Basis Function kernel
         """
         sqdist = (X1 - X2.T) ** 2
-        return self.sigma_f ** 2 * np.exp(-sqdist / (2 * self.l ** 2))
+        return self.sigma_f ** 2 * np.exp(-sqdist / (self.l ** 2))
 
     def predict(self, X_s):
         """
