@@ -1,53 +1,32 @@
 #!/usr/bin/env python3
 """
-Bayesian Optimization - full optimization loop
+Bayesian Optimization (Full Optimization Loop)
 """
 
 import numpy as np
-GP = __import__('2-gp').GaussianProcess
 from scipy.stats import norm
+
+GP = __import__('2-gp').GaussianProcess
 
 
 class BayesianOptimization:
-    """
-    Bayesian Optimization using Gaussian Process
-    """
+    """Bayesian Optimization using Gaussian Process"""
 
-    def __init__(
-        self,
-        f,
-        X_init,
-        Y_init,
-        bounds,
-        ac_samples,
-        l=1,
-        sigma_f=1,
-        xsi=0.01,
-        minimize=True
-    ):
-        """
-        Constructor
-        """
-
+    def __init__(self, f, X_init, Y_init, bounds, ac_samples,
+                 l=1, sigma_f=1, xsi=0.01, minimize=True):
+        """Initialize Bayesian Optimization"""
         self.f = f
         self.gp = GP(X_init, Y_init, l, sigma_f)
 
-        self.X_s = np.linspace(
-            bounds[0],
-            bounds[1],
-            ac_samples
-        ).reshape(-1, 1)
+        min_b, max_b = bounds
+        self.X_s = np.linspace(min_b, max_b, ac_samples).reshape(-1, 1)
 
         self.xsi = xsi
         self.minimize = minimize
 
     def acquisition(self):
-        """
-        Expected Improvement acquisition function
-        """
-
-        mu, var = self.gp.predict(self.X_s)
-        sigma = np.sqrt(var)
+        """Compute Expected Improvement"""
+        mu, sigma = self.gp.predict(self.X_s)
 
         if self.minimize:
             best = np.min(self.gp.Y)
@@ -56,42 +35,40 @@ class BayesianOptimization:
             best = np.max(self.gp.Y)
             imp = mu - best - self.xsi
 
-        Z = np.zeros_like(mu)
+        Z = np.zeros_like(sigma)
 
-        mask = sigma > 0
-        Z[mask] = imp[mask] / sigma[mask]
+        for i in range(len(sigma)):
+            if sigma[i] != 0:
+                Z[i] = imp[i] / sigma[i]
 
-        EI = np.zeros_like(mu)
+        ei = np.zeros_like(sigma)
 
-        EI[mask] = (
-            imp[mask] * norm.cdf(Z[mask]) +
-            sigma[mask] * norm.pdf(Z[mask])
-        )
+        for i in range(len(sigma)):
+            if sigma[i] > 0:
+                ei[i] = imp[i] * norm.cdf(Z[i]) + sigma[i] * norm.pdf(Z[i])
 
-        X_next = self.X_s[np.argmax(EI)].reshape(1,)
+        X_next = self.X_s[np.argmax(ei)]
 
-        return X_next, EI.reshape(-1)
+        return X_next, ei
 
     def optimize(self, iterations=100):
-        """
-        Runs Bayesian Optimization loop
-        """
+        """Run Bayesian Optimization loop"""
+        history = []
 
         for _ in range(iterations):
+            X_next, ei = self.acquisition()
 
-            X_next, _ = self.acquisition()
-
-            # stop if already sampled
             if np.any(np.all(self.gp.X == X_next, axis=1)):
                 break
 
             Y_next = self.f(X_next)
 
             self.gp.update(X_next, Y_next)
+            history.append(np.argmax(ei))
 
         if self.minimize:
             idx = np.argmin(self.gp.Y)
         else:
             idx = np.argmax(self.gp.Y)
 
-        return self.gp.X[idx].reshape(1,), self.gp.Y[idx].reshape(1,)
+        return self.gp.X[idx], self.gp.Y[idx]
