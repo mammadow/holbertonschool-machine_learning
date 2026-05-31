@@ -5,6 +5,8 @@ Bayesian Optimization initialization
 
 import numpy as np
 
+GP = __import__('2-gp').GaussianProcess
+
 
 class BayesianOptimization:
     """
@@ -29,7 +31,6 @@ class BayesianOptimization:
 
         self.f = f
 
-        GP = __import__('2-gp').GaussianProcess
         self.gp = GP(X_init, Y_init, l, sigma_f)
 
         self.X_s = np.linspace(
