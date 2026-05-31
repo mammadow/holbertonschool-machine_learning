@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """
-Bayesian Optimization - Acquisition function
+Bayesian Optimization - Acquisition
 """
 
 import numpy as np
+GP = __import__('2-gp').GaussianProcess
 from scipy.stats import norm
 
 
@@ -27,9 +28,8 @@ class BayesianOptimization:
         """
         Constructor
         """
-        self.f = f
 
-        GP = __import__('2-gp').GaussianProcess
+        self.f = f
         self.gp = GP(X_init, Y_init, l, sigma_f)
 
         self.X_s = np.linspace(
@@ -43,7 +43,7 @@ class BayesianOptimization:
 
     def acquisition(self):
         """
-        Calculates Expected Improvement and best next sample
+        Calculates Expected Improvement and next sampling point
         """
 
         mu, var = self.gp.predict(self.X_s)
@@ -68,6 +68,6 @@ class BayesianOptimization:
             sigma[mask] * norm.pdf(Z[mask])
         )
 
-        X_next = self.X_s[np.argmax(EI)]
+        X_next = self.X_s[np.argmax(EI)].reshape(1,)
 
         return X_next, EI.reshape(-1)
