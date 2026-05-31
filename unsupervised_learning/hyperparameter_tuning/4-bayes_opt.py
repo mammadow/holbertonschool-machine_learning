@@ -1,53 +1,32 @@
 #!/usr/bin/env python3
 """
-Bayesian Optimization - Acquisition
+Bayesian Optimization (Acquisition)
 """
 
 import numpy as np
-GP = __import__('2-gp').GaussianProcess
 from scipy.stats import norm
+
+GP = __import__('2-gp').GaussianProcess
 
 
 class BayesianOptimization:
-    """
-    Bayesian Optimization using Gaussian Process
-    """
+    """Bayesian Optimization using Gaussian Process"""
 
-    def __init__(
-        self,
-        f,
-        X_init,
-        Y_init,
-        bounds,
-        ac_samples,
-        l=1,
-        sigma_f=1,
-        xsi=0.01,
-        minimize=True
-    ):
-        """
-        Constructor
-        """
-
+    def __init__(self, f, X_init, Y_init, bounds, ac_samples,
+                 l=1, sigma_f=1, xsi=0.01, minimize=True):
+        """Initialize Bayesian Optimization"""
         self.f = f
         self.gp = GP(X_init, Y_init, l, sigma_f)
 
-        self.X_s = np.linspace(
-            bounds[0],
-            bounds[1],
-            ac_samples
-        ).reshape(-1, 1)
+        min_b, max_b = bounds
+        self.X_s = np.linspace(min_b, max_b, ac_samples).reshape(-1, 1)
 
         self.xsi = xsi
         self.minimize = minimize
 
     def acquisition(self):
-        """
-        Calculates Expected Improvement and next sampling point
-        """
-
-        mu, var = self.gp.predict(self.X_s)
-        sigma = np.sqrt(var)
+        """Compute Expected Improvement"""
+        mu, sigma = self.gp.predict(self.X_s)
 
         if self.minimize:
             best = np.min(self.gp.Y)
@@ -56,18 +35,18 @@ class BayesianOptimization:
             best = np.max(self.gp.Y)
             imp = mu - best - self.xsi
 
-        Z = np.zeros_like(mu)
+        Z = np.zeros_like(sigma)
 
-        mask = sigma > 0
-        Z[mask] = imp[mask] / sigma[mask]
+        for i in range(len(sigma)):
+            if sigma[i] != 0:
+                Z[i] = imp[i] / sigma[i]
 
-        EI = np.zeros_like(mu)
+        ei = np.zeros_like(sigma)
 
-        EI[mask] = (
-            imp[mask] * norm.cdf(Z[mask]) +
-            sigma[mask] * norm.pdf(Z[mask])
-        )
+        for i in range(len(sigma)):
+            if sigma[i] > 0:
+                ei[i] = imp[i] * norm.cdf(Z[i]) + sigma[i] * norm.pdf(Z[i])
 
-        X_next = self.X_s[np.argmax(EI)].reshape(1,)
+        X_next = self.X_s[np.argmax(ei)]
 
-        return X_next, EI.reshape(-1)
+        return X_next, ei
