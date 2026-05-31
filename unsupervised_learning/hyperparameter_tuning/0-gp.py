@@ -24,7 +24,5 @@ class GaussianProcess:
         """
         sqdist = (X1 - X2.T) ** 2
 
-        return (
-            self.sigma_f ** 2
-            * np.exp(-sqdist / (2 * self.l ** 2))
-        )
+        return (self.sigma_f ** 2
+                * np.exp(-sqdist / (2 * self.l ** 2)))
