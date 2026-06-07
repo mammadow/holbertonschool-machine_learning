@@ -48,7 +48,6 @@ def autoencoder(input_dims, hidden_layers, latent_dims):
             axis=-1
         )
         return xent_loss + kl_loss
-
-    auto.compile(optimizer='adam', loss=vae_loss)
+    auto.compile(optimizer=keras.optimizers.Adam(), loss=vae_loss)
 
     return encoder, decoder, auto
