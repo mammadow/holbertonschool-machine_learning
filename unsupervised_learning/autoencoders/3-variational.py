@@ -17,20 +17,15 @@ def autoencoder(input_dims, hidden_layers, latent_dims):
     mu = keras.layers.Dense(latent_dims)(x)
     log_var = keras.layers.Dense(latent_dims)(x)
 
-    def sample(args):
-        """Samples from the latent distribution."""
-        mean, log_variance = args
-        epsilon = K.random_normal(
-            shape=(K.shape(mean)[0], latent_dims)
-        )
-        return mean + K.exp(log_variance / 2) * epsilon
+    def sampling(args):
+        """Reparameterization trick."""
+        mu, log_var = args
+        epsilon = K.random_normal(shape=(K.shape(mu)[0], latent_dims))
+        return mu + K.exp(log_var / 2) * epsilon
 
-    z = keras.layers.Lambda(sample)([mu, log_var])
+    z = keras.layers.Lambda(sampling)([mu, log_var])
 
-    encoder = keras.Model(
-        inputs=encoder_input,
-        outputs=[z, mu, log_var]
-    )
+    encoder = keras.Model(encoder_input, [z, mu, log_var])
 
     decoder_input = keras.Input(shape=(latent_dims,))
 
@@ -43,21 +38,14 @@ def autoencoder(input_dims, hidden_layers, latent_dims):
         activation='sigmoid'
     )(x)
 
-    decoder = keras.Model(
-        inputs=decoder_input,
-        outputs=decoder_output
-    )
+    decoder = keras.Model(decoder_input, decoder_output)
 
-    auto_output = decoder(z)
-
-    auto = keras.Model(
-        inputs=encoder_input,
-        outputs=auto_output
-    )
+    output = decoder(z)
+    auto = keras.Model(encoder_input, output)
 
     kl_loss = -0.5 * K.sum(
         1 + log_var - K.square(mu) - K.exp(log_var),
-        axis=1
+        axis=-1
     )
 
     auto.add_loss(K.mean(kl_loss))
