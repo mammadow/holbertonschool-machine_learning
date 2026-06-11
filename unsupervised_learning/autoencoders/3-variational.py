@@ -1,6 +1,19 @@
 #!/usr/bin/env python3
 """Variational Autoencoder"""
 import tensorflow.keras as keras
+K = keras.backend
+
+
+class KLDivergence(keras.layers.Layer):
+    """Layer that adds the KL divergence to the model's losses."""
+
+    def call(self, inputs):
+        """Compute KL from [mean, log_var] and register it as a loss."""
+        mean, log_var = inputs
+        kl = 1 + log_var - K.square(mean) - K.exp(log_var)
+        kl = -0.5 * K.sum(kl, axis=1)
+        self.add_loss(K.mean(kl))
+        return mean
 
 
 def autoencoder(input_dims, hidden_layers, latent_dims):
@@ -17,13 +30,12 @@ def autoencoder(input_dims, hidden_layers, latent_dims):
 
     def sampling(args):
         """Reparameterization trick."""
-        mean, log_var = args
-        batch = keras.backend.shape(mean)[0]
-        epsilon = keras.backend.random_normal(shape=(batch, latent_dims))
-        return mean + keras.backend.exp(log_var / 2) * epsilon
+        mu, lv = args
+        batch = K.shape(mu)[0]
+        epsilon = K.random_normal(shape=(batch, latent_dims))
+        return mu + K.exp(lv / 2) * epsilon
 
-    z = keras.layers.Lambda(
-        sampling, output_shape=(latent_dims,))([mean, log_var])
+    z = keras.layers.Lambda(sampling)([mean, log_var])
     encoder = keras.Model(inputs, [z, mean, log_var])
 
     # ---------- Decoder ----------
@@ -35,17 +47,15 @@ def autoencoder(input_dims, hidden_layers, latent_dims):
     decoder = keras.Model(latent_inputs, outputs)
 
     # ---------- Full autoencoder ----------
-    auto_outputs = decoder(encoder(inputs)[0])
+    enc_z, enc_mean, enc_log_var = encoder(inputs)
+    KLDivergence()([enc_mean, enc_log_var])  # registers KL loss
+    auto_outputs = decoder(enc_z)
     auto = keras.Model(inputs, auto_outputs)
 
     def vae_loss(y_true, y_pred):
-        """Reconstruction (BCE summed over inputs) + KL divergence."""
-        reconstruction = keras.backend.binary_crossentropy(y_true, y_pred)
-        reconstruction = keras.backend.sum(reconstruction, axis=1)
-        kl = 1 + log_var - keras.backend.square(mean)
-        kl = kl - keras.backend.exp(log_var)
-        kl = -0.5 * keras.backend.sum(kl, axis=1)
-        return reconstruction + kl
+        """Reconstruction BCE, summed over inputs."""
+        bce = K.binary_crossentropy(y_true, y_pred)
+        return K.sum(bce, axis=1)
 
     auto.compile(optimizer='adam', loss=vae_loss)
 
