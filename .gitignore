@@ -15,6 +15,7 @@ venv/
 .env/
 .venv/
 env/
+tf-env-py312-old/
 
 # ML / large model files
 *.h5
