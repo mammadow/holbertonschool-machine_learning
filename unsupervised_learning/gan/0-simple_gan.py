@@ -26,30 +26,35 @@ class Simple_GAN(keras.Model):
         self.beta_2 = .9
 
         # define the generator loss and optimizer:
-        self.generator.loss = lambda x: tf.keras.losses.MeanSquaredError()(
-            x, tf.ones(x.shape))
+        self.generator.loss = (
+            lambda x: tf.keras.losses.MeanSquaredError()(
+                x, tf.ones(x.shape)))
         self.generator.optimizer = keras.optimizers.Adam(
-            learning_rate=self.learning_rate, beta_1=self.beta_1,
+            learning_rate=self.learning_rate,
+            beta_1=self.beta_1,
             beta_2=self.beta_2)
         self.generator.compile(optimizer=generator.optimizer,
-                                loss=generator.loss)
+                               loss=generator.loss)
 
         # define the discriminator loss and optimizer:
-        self.discriminator.loss = lambda x, y: (
-            tf.keras.losses.MeanSquaredError()(x, tf.ones(x.shape)) +
-            tf.keras.losses.MeanSquaredError()(y, -1 * tf.ones(y.shape)))
+        self.discriminator.loss = (
+            lambda x, y: tf.keras.losses.MeanSquaredError()(
+                x, tf.ones(x.shape)) +
+            tf.keras.losses.MeanSquaredError()(
+                y, -1 * tf.ones(y.shape)))
         self.discriminator.optimizer = keras.optimizers.Adam(
-            learning_rate=self.learning_rate, beta_1=self.beta_1,
+            learning_rate=self.learning_rate,
+            beta_1=self.beta_1,
             beta_2=self.beta_2)
         self.discriminator.compile(optimizer=discriminator.optimizer,
-                                    loss=discriminator.loss)
+                                   loss=discriminator.loss)
 
     def get_fake_sample(self, size=None, training=False):
         """Generator of fake samples of size batch_size"""
         if not size:
             size = self.batch_size
         return self.generator(self.latent_generator(size),
-                               training=training)
+                              training=training)
 
     def get_real_sample(self, size=None):
         """Generator of real samples of size batch_size"""
@@ -66,18 +71,19 @@ class Simple_GAN(keras.Model):
                 real_samples = self.get_real_sample()
                 fake_samples = self.get_fake_sample(training=True)
 
-                real_output = self.discriminator(real_samples,
-                                                   training=True)
-                fake_output = self.discriminator(fake_samples,
-                                                   training=True)
+                real_output = self.discriminator(
+                    real_samples, training=True)
+                fake_output = self.discriminator(
+                    fake_samples, training=True)
 
-                discr_loss = self.discriminator.loss(real_output,
-                                                       fake_output)
+                discr_loss = self.discriminator.loss(
+                    real_output, fake_output)
 
             disc_gradients = disc_tape.gradient(
                 discr_loss, self.discriminator.trainable_variables)
             self.discriminator.optimizer.apply_gradients(
-                zip(disc_gradients, self.discriminator.trainable_variables))
+                zip(disc_gradients,
+                    self.discriminator.trainable_variables))
 
         with tf.GradientTape() as gen_tape:
             fake_samples = self.get_fake_sample(training=True)
