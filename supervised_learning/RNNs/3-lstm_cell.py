@@ -1,47 +1,50 @@
 #!/usr/bin/env python3
-"""GRU Cell module."""
-
+"""LSTM Cell module"""
 import numpy as np
 
 
-class GRUCell:
-    """Represents a GRU cell."""
+class LSTMCell:
+    """Represents an LSTM unit"""
 
     def __init__(self, i, h, o):
-        """Initialize the GRU cell."""
-        self.Wz = np.random.randn(i + h, h)
-        self.Wr = np.random.randn(i + h, h)
-        self.Wh = np.random.randn(i + h, h)
-        self.Wy = np.random.randn(h, o)
+        """Initializes weights and biases for the LSTM cell"""
+        self.Wf = np.random.normal(size=(i + h, h))
+        self.Wu = np.random.normal(size=(i + h, h))
+        self.Wc = np.random.normal(size=(i + h, h))
+        self.Wo = np.random.normal(size=(i + h, h))
+        self.Wy = np.random.normal(size=(h, o))
 
-        self.bz = np.zeros((1, h))
-        self.br = np.zeros((1, h))
-        self.bh = np.zeros((1, h))
+        self.bf = np.zeros((1, h))
+        self.bu = np.zeros((1, h))
+        self.bc = np.zeros((1, h))
+        self.bo = np.zeros((1, h))
         self.by = np.zeros((1, o))
+
+    def forward(self, h_prev, c_prev, x_t):
+        """Performs forward propagation for one time step"""
+        concat = np.concatenate((h_prev, x_t), axis=1)
+
+        ft = self.sigmoid(np.matmul(concat, self.Wf) + self.bf)
+        ut = self.sigmoid(np.matmul(concat, self.Wu) + self.bu)
+        cct = np.tanh(np.matmul(concat, self.Wc) + self.bc)
+
+        c_next = ft * c_prev + ut * cct
+
+        ot = self.sigmoid(np.matmul(concat, self.Wo) + self.bo)
+        h_next = ot * np.tanh(c_next)
+
+        y_linear = np.matmul(h_next, self.Wy) + self.by
+        y = self.softmax(y_linear)
+
+        return h_next, c_next, y
 
     @staticmethod
     def sigmoid(x):
-        """Compute sigmoid activation."""
+        """Sigmoid activation function"""
         return 1 / (1 + np.exp(-x))
 
     @staticmethod
     def softmax(x):
-        """Compute softmax activation."""
-        exp_x = np.exp(x - np.max(x, axis=1, keepdims=True))
-        return exp_x / np.sum(exp_x, axis=1, keepdims=True)
-
-    def forward(self, h_prev, x_t):
-        """Perform forward propagation for one time step."""
-        concat = np.concatenate((h_prev, x_t), axis=1)
-
-        z = self.sigmoid(np.matmul(concat, self.Wz) + self.bz)
-        r = self.sigmoid(np.matmul(concat, self.Wr) + self.br)
-
-        concat_h = np.concatenate((r * h_prev, x_t), axis=1)
-        h_hat = np.tanh(np.matmul(concat_h, self.Wh) + self.bh)
-
-        h_next = (1 - z) * h_prev + z * h_hat
-
-        y = self.softmax(np.matmul(h_next, self.Wy) + self.by)
-
-        return h_next, y
+        """Softmax activation function"""
+        e_x = np.exp(x - np.max(x, axis=1, keepdims=True))
+        return e_x / np.sum(e_x, axis=1, keepdims=True)
