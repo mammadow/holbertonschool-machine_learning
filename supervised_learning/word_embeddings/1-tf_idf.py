@@ -29,31 +29,28 @@ def tf_idf(sentences, vocab=None):
         for i, word in enumerate(features)
     }
 
-    n_sentences = len(sentences)
-    n_features = len(features)
-
-    tf = np.zeros((n_sentences, n_features))
-    df = np.zeros(n_features)
+    embeddings = np.zeros((len(sentences), len(features)))
+    df = np.zeros(len(features))
 
     for i, sentence in enumerate(processed):
-        counts = {}
+        seen = set()
+
         for word in sentence:
             if word in word_to_index:
-                counts[word] = counts.get(word, 0) + 1
+                j = word_to_index[word]
+                embeddings[i, j] += 1
+                seen.add(word)
 
-        total = len(sentence)
+        for word in seen:
+            df[word_to_index[word]] += 1
 
-        for word, count in counts.items():
-            j = word_to_index[word]
-            tf[i, j] = count / total
-            df[j] += 1
+    idf = np.log(len(sentences) / df)
 
-    idf = np.log(n_sentences / df)
-
-    embeddings = tf * idf
+    embeddings *= idf
 
     norms = np.linalg.norm(embeddings, axis=1, keepdims=True)
     norms[norms == 0] = 1
-    embeddings = embeddings / norms
+
+    embeddings /= norms
 
     return embeddings, np.array(features)
