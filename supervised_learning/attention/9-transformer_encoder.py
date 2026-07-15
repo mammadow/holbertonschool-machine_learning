@@ -2,8 +2,8 @@
 """Transformer Encoder"""
 
 import tensorflow as tf
-positional_encoding = __import__("4-positional_encoding").positional_encoding
-EncoderBlock = __import__("7-transformer_encoder_block").EncoderBlock
+positional_encoding = __import__('4-positional_encoding').positional_encoding
+EncoderBlock = __import__('7-transformer_encoder_block').EncoderBlock
 
 
 class Encoder(tf.keras.layers.Layer):
