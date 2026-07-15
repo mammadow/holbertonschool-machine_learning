@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """Transformer"""
 
-from tensorflow import keras
+import tensorflow as tf
 Encoder = __import__('9-transformer_encoder').Encoder
 Decoder = __import__('10-transformer_decoder').Decoder
 
 
-class Transformer(keras.Model):
+class Transformer(tf.keras.Model):
     """Transformer network"""
 
     def __init__(self, N, dm, h, hidden, input_vocab, target_vocab,
@@ -31,7 +31,7 @@ class Transformer(keras.Model):
             max_seq_target,
             drop_rate
         )
-        self.linear = keras.layers.Dense(target_vocab)
+        self.linear = tf.keras.layers.Dense(target_vocab)
 
     def call(self, inputs, target, training,
              encoder_mask, look_ahead_mask, decoder_mask):
