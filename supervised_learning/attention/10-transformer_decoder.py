@@ -2,12 +2,11 @@
 """Transformer Decoder"""
 
 import tensorflow as tf
-from tensorflow import keras
 positional_encoding = __import__('4-positional_encoding').positional_encoding
 DecoderBlock = __import__('8-transformer_decoder_block').DecoderBlock
 
 
-class Decoder(keras.layers.Layer):
+class Decoder(tf.keras.layers.Layer):
     """Transformer decoder"""
 
     def __init__(self, N, dm, h, hidden, target_vocab,
@@ -16,7 +15,7 @@ class Decoder(keras.layers.Layer):
         super().__init__()
         self.N = N
         self.dm = dm
-        self.embedding = keras.layers.Embedding(target_vocab, dm)
+        self.embedding = tf.keras.layers.Embedding(target_vocab, dm)
         self.positional_encoding = positional_encoding(max_seq_len, dm)
         self.blocks = [
             DecoderBlock(dm, h, hidden, drop_rate)
