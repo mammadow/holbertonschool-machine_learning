@@ -21,7 +21,7 @@ class Decoder(tf.keras.layers.Layer):
             DecoderBlock(dm, h, hidden, drop_rate)
             for _ in range(N)
         ]
-        self.dropout = keras.layers.Dropout(drop_rate)
+        self.dropout = tf.keras.layers.Dropout(drop_rate)
 
     def call(self, x, encoder_output, training,
              look_ahead_mask, padding_mask):
