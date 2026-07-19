@@ -18,6 +18,7 @@ class Dataset:
 
     def tokenize_dataset(self, data):
         """Train tokenizers."""
+
         tokenizer_pt = transformers.AutoTokenizer.from_pretrained(
             "neuralmind/bert-base-portuguese-cased"
         )
@@ -25,13 +26,23 @@ class Dataset:
             "bert-base-uncased"
         )
 
+        def pt_iterator():
+            """PT iterator."""
+            for pt, _ in data:
+                yield pt.numpy().decode("utf-8")
+
+        def en_iterator():
+            """EN iterator."""
+            for _, en in data:
+                yield en.numpy().decode("utf-8")
+
         tokenizer_pt = tokenizer_pt.train_new_from_iterator(
-            (pt.numpy().decode("utf-8") for pt, _ in data),
+            pt_iterator(),
             vocab_size=2 ** 13
         )
 
         tokenizer_en = tokenizer_en.train_new_from_iterator(
-            (en.numpy().decode("utf-8") for _, en in data),
+            en_iterator(),
             vocab_size=2 ** 13
         )
 
