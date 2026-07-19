@@ -2,7 +2,7 @@
 """Dataset class."""
 
 from setup import load_pt2en
-from transformers import AutoTokenizer
+import transformers
 
 
 class Dataset:
@@ -18,26 +18,20 @@ class Dataset:
 
     def tokenize_dataset(self, data):
         """Train tokenizers."""
-        tokenizer_pt = AutoTokenizer.from_pretrained(
+        tokenizer_pt = transformers.AutoTokenizer.from_pretrained(
             "neuralmind/bert-base-portuguese-cased"
         )
-        tokenizer_en = AutoTokenizer.from_pretrained(
+        tokenizer_en = transformers.AutoTokenizer.from_pretrained(
             "bert-base-uncased"
         )
 
         tokenizer_pt = tokenizer_pt.train_new_from_iterator(
-            (
-                pt.numpy().decode("utf-8")
-                for pt, _ in data
-            ),
+            (pt.numpy().decode("utf-8") for pt, _ in data),
             vocab_size=2 ** 13
         )
 
         tokenizer_en = tokenizer_en.train_new_from_iterator(
-            (
-                en.numpy().decode("utf-8")
-                for _, en in data
-            ),
+            (en.numpy().decode("utf-8") for _, en in data),
             vocab_size=2 ** 13
         )
 
