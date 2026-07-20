@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Dataset class."""
 
-from setup import load_pt2en
 import transformers
+from setup import load_pt2en
 
 
 class Dataset:
@@ -18,6 +18,12 @@ class Dataset:
 
     def tokenize_dataset(self, data):
         """Train tokenizers."""
+        tokenizer_pt = transformers.AutoTokenizer.from_pretrained(
+            "neuralmind/bert-base-portuguese-cased"
+        )
+        tokenizer_en = transformers.AutoTokenizer.from_pretrained(
+            "bert-base-uncased"
+        )
 
         def pt_iterator():
             """PT iterator."""
@@ -28,13 +34,6 @@ class Dataset:
             """EN iterator."""
             for _, en in data:
                 yield en.numpy().decode("utf-8")
-
-        tokenizer_pt = transformers.AutoTokenizer.from_pretrained(
-            "neuralmind/bert-base-portuguese-cased"
-        )
-        tokenizer_en = transformers.AutoTokenizer.from_pretrained(
-            "bert-base-uncased"
-        )
 
         tokenizer_pt = tokenizer_pt.train_new_from_iterator(
             pt_iterator(),
@@ -51,16 +50,20 @@ class Dataset:
     def encode(self, pt, en):
         """Encode sentences."""
         pt_tokens = [self.tokenizer_pt.vocab_size]
-        pt_tokens += self.tokenizer_pt.encode(
-            pt.numpy().decode("utf-8"),
-            add_special_tokens=False
+        pt_tokens.extend(
+            self.tokenizer_pt.encode(
+                pt.numpy().decode("utf-8"),
+                add_special_tokens=False
+            )
         )
         pt_tokens.append(self.tokenizer_pt.vocab_size + 1)
 
         en_tokens = [self.tokenizer_en.vocab_size]
-        en_tokens += self.tokenizer_en.encode(
-            en.numpy().decode("utf-8"),
-            add_special_tokens=False
+        en_tokens.extend(
+            self.tokenizer_en.encode(
+                en.numpy().decode("utf-8"),
+                add_special_tokens=False
+            )
         )
         en_tokens.append(self.tokenizer_en.vocab_size + 1)
 
